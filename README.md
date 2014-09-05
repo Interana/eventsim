@@ -34,16 +34,18 @@ To build the executable, run
 You can then run the simulator from the root directory with a command like this
 
     $ bin/eventsim --help
-    [info] Running com.interana.eventsim.Main --help
-      -a, --alpha  <arg>       expected session length (default = 300000.0)
-      -b, --beta  <arg>        expected number of pages per session (default = 5.0)
-      -e, --endtime  <arg>     end time for data
-                               (default = 2014-08-29T09:44:16.287-07:00)
-      -g, --gamma  <arg>       expected session inter-arrival time
-                               (default = 4320000.0)
-      -n, --nusers  <arg>      number of users (default = 1)
-      -s, --starttime  <arg>   start time for data
-                               (default = 2014-08-22T09:44:16.557-07:00)
-          --help               Show help message
+      -a, --alpha  <arg>        expected session length (default = 300000.0)
+      -b, --beta  <arg>         expected number of pages per session (default = 5.0)
+      -e, --end time  <arg>     end time for data
+                                (default = 2014-08-29T10:19:13.334-07:00)
+      -g, --gamma  <arg>        expected session inter-arrival time
+                                (default = 4320000.0)
+      -n, --nusers  <arg>       number of users (default = 1)
+      -s, --start time  <arg>   start time for data
+                                (default = 2014-08-22T10:19:13.494-07:00)
+          --help                Show help message
+
+    trailing arguments:
+        output file (not required)   File name
 
 If you want to edit the code, I strongly recommend IntelliJ. Ping me for details on setting this up.

@@ -27,7 +27,7 @@ class State(val name: String) {
 
   def nextState(rng: RandomGenerator) = {
     val x = rng.nextDouble()
-    transitions.find(inRange(x,_)).getOrElse((this,(0.0,0.0)))._1
+    transitions.find(inRange(x,_)).getOrElse((this,Unit))._1
   }
 
   override def toString = name
