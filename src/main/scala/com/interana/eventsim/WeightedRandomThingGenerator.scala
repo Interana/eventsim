@@ -1,10 +1,6 @@
 package com.interana.eventsim
 
-import java.util
-
 import org.apache.commons.math3.random.{MersenneTwister, RandomGenerator}
-
-import scala.collection.mutable
 
 /**
  * Created by jadler on 9/2/14.
@@ -30,7 +26,7 @@ class WeightedRandomThingGenerator[T]  {
   def randomThing: T = {
     val key: Tuple2[T, Integer] = (null, rng.nextInt(totalWeight)).asInstanceOf[Tuple2[T,Integer]]
     val idx = java.util.Arrays.binarySearch(a, key, tupleSecondValueOrdering)
-    a(Math.abs(idx))._1
+    if (idx >= 0) a(idx)._1 else a(-idx - 2)._1
   }
 
 }

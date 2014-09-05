@@ -28,20 +28,20 @@ object TimeUtilities {
 
   def weekendDamping(dt: DateTime) = {
     if (dt.toLocalTime.getHourOfDay < 6 && isWeekendOrHoliday(dt.minusHours(6).toLocalDate)) {
-      (1.0f - (0.5f * dt.minuteOfDay().get() / 360))
+      1.0f - (0.5f * dt.minuteOfDay().get() / 360)
     } else if (dt.toLocalTime.getHourOfDay > 18 && isWeekendOrHoliday(dt.plusHours(18).toLocalDate)) {
-      (0.5f + (0.5f * (dt.minuteOfDay().get() - 1080) / 360))
+      0.5f + (0.5f * (dt.minuteOfDay().get() - 1080) / 360)
     } else {
       0.5f
     }
   }
 
   def keepThisDate(lastTs: DateTime, newTs: DateTime) = {
-    val wd = (rng.nextDouble() < weekendDamping(newTs))
+    val wd = rng.nextDouble() < weekendDamping(newTs)
     newTs.isAfter(lastTs) && !((isHoliday(newTs) || isWeekend(newTs)) && wd)
   }
 
-  val MILLISECONDS_PER_DAY = 60 * 24 * 1000
+  val MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000
 
   def warpOffset(ts:DateTime, offsetMilliSeconds: Long, dampingFactor: Double): Int = {
     val ms = ts.millisOfDay().get().toLong
