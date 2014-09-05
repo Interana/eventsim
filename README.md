@@ -25,12 +25,15 @@ Start by installing scala. Easiest way is
 
     $ brew install scala
 
-For now, run it using sbt
+To build the executable, run
 
-    $ sbt
-    [info] Loading project definition from /Users/jadler/dev/eventsim/project
-    [info] Set current project to eventsim (in build file:/Users/jadler/dev/eventsim/)
-    > run --help
+    $ sbt assembly
+    $ # make sure the script is executable
+    $ chmod +x bin/eventsim
+
+You can then run the simulator from the root directory with a command like this
+
+    $ bin/eventsim --help
     [info] Running com.interana.eventsim.Main --help
       -a, --alpha  <arg>       expected session length (default = 300000.0)
       -b, --beta  <arg>        expected number of pages per session (default = 5.0)
