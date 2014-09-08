@@ -2,9 +2,8 @@ package com.interana.eventsim
 
 import java.io.Serializable
 
+import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
-import org.joda.time.{ReadableInstant, DateTime, LocalDate}
-import TimeUtilities._
 
 import scala.util.parsing.json.JSONObject
 
@@ -28,7 +27,7 @@ class User(val alpha: Double, // alpha = expected session length
 
   def eventString = {
     val m = props.+(
-      "ts" -> session.nextEventTimeStamp,
+      "ts" -> session.nextEventTimeStamp.getMillis,
       "userId" -> userId,
       "sessionId" -> session.sessionId,
       "page" -> session.currentState.name,
