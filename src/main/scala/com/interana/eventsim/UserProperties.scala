@@ -1,6 +1,6 @@
 package com.interana.eventsim
 
-import com.interana.eventsim.generators._
+import com.interana.eventsim.buildin._
 
 object UserProperties {
   // utilities for generating random properties for users

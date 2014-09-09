@@ -22,13 +22,10 @@ object Main extends App {
       opt[Int]("nusers", descr = "number of users",
         required = false, default = Option(1))
     val alpha: ScallopOption[Double] =
-      opt[Double]("alpha", descr = "expected session length",
-        required = false, default = Option(300000))
+      opt[Double]("alpha", descr = "expected request inter-arrival time",
+        required = false, default = Option(60000))
     val beta: ScallopOption[Double] =
-      opt[Double]("beta", descr = "expected number of pages per session",
-        required = false, default = Option(5))
-    val gamma: ScallopOption[Double] =
-      opt[Double]("gamma", descr = "expected session inter-arrival time",
+      opt[Double]("beta", descr = "expected session inter-arrival time",
         required = false, default = Option(TimeUtilities.MILLISECONDS_PER_DAY * 3))
     val startTimeArg: ScallopOption[String] =
       opt[String]("start-time", descr = "start time for data",
@@ -45,6 +42,9 @@ object Main extends App {
     val to: ScallopOption[Int] =
       opt[Int]("to", descr = "to y days ago", required=false,default=Option(1))
 
+    val graph: ScallopOption[String] =
+      opt[String]("graph", descr = "transition graph", required=true)
+
     val verbose = toggle("verbose", default = Some(false), descrYes = "verbose output (not implemented yet)", descrNo = "silent mode")
     val outputFile: ScallopOption[String] = trailArg[String]("output-file", required = false, descr = "File name")
 
@@ -53,13 +53,14 @@ object Main extends App {
   val startTime = if (Conf.startTimeArg.isSupplied) {new DateTime(Conf.startTimeArg())} else {new DateTime().minusDays(Conf.from())}
   val endTime = if (Conf.endTimeArg.isSupplied) {new DateTime(Conf.endTimeArg())} else {new DateTime().minusDays(Conf.to())}
 
+  val initialState = State.stateFileLoader(Conf.graph())
+
   (0 until Conf.nUsers()).foreach((_) =>
     users += new User(
-      Conf.alpha() * logNormalRandomValue, // alpha = expected session length
-      Conf.beta() * logNormalRandomValue, // beta = expected number of pages per session
-      Conf.gamma() * logNormalRandomValue, // gamma = expected session inter-arrival time
+      Conf.alpha() * logNormalRandomValue, // alpha = expected request inter-arrival time
+      Conf.beta() * logNormalRandomValue, // beta = expected session inter-arrival time
       startTime, // start time
-      ExampleSite.homePage, // start state
+      initialState, // start state
       UserProperties.randomProps // properties
     ))
 

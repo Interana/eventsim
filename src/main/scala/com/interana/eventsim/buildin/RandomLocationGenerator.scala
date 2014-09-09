@@ -1,4 +1,4 @@
-package com.interana.eventsim.generators
+package com.interana.eventsim.buildin
 
 import com.interana.eventsim.WeightedRandomThingGenerator
 
