@@ -19,7 +19,7 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
   override def compare(that: User): Int = that.session.nextEventTimeStamp.compareTo(this.session.nextEventTimeStamp)
 
   def nextEvent() = {
-    session.incrementEvent
+    session.incrementEvent()
     if (session.done)
       session = session.nextSession
   }

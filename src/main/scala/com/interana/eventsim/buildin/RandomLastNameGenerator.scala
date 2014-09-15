@@ -11,11 +11,11 @@ import scala.io.Source
 class RandomLastNameGenerator extends WeightedRandomThingGenerator[String] {
 
   val s = Source.fromFile("data/Top1000Surnames.csv","ISO-8859-1")
-  val lines = s.getLines.drop(1)
+  val lines = s.getLines().drop(1)
   for (l <- lines) {
     val fields = l.split(",")
     this.add(fields(0).toLowerCase.capitalize, fields(2).toInt)
   }
-  s.close
+  s.close()
 
 }

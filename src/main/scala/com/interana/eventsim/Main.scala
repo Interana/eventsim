@@ -45,6 +45,10 @@ object Main extends App {
     val graph: ScallopOption[String] =
       opt[String]("graph", descr = "transition graph", required=true)
 
+    val damping: ScallopOption[Float] =
+      opt[Float]("damping", descr = "damping factor for daily traffic, between 0 and 0.125",
+        required=false, validate=( (f:Float) => (f>=0 && f <=0.125)))
+
     val verbose = toggle("verbose", default = Some(false), descrYes = "verbose output (not implemented yet)", descrNo = "silent mode")
     val outputFile: ScallopOption[String] = trailArg[String]("output-file", required = false, descr = "File name")
 
@@ -54,6 +58,10 @@ object Main extends App {
   val endTime = if (Conf.endTimeArg.isSupplied) {new DateTime(Conf.endTimeArg())} else {new DateTime().minusDays(Conf.to())}
 
   val initialState = State.stateFileLoader(Conf.graph())
+
+  println("initial State = " + initialState.toString())
+
+  if (Conf.damping.isSupplied) TimeUtilities.damping = Conf.damping()
 
   (0 until Conf.nUsers()).foreach((_) =>
     users += new User(
@@ -75,7 +83,7 @@ object Main extends App {
     val u = users.dequeue()
     clock = u.session.nextEventTimeStamp
     if (clock.isAfter(startTime)) out.println(u.eventString)
-    u.nextEvent
+    u.nextEvent()
     users += u
   }
 

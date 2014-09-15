@@ -57,7 +57,7 @@ object Session {
     var nextTimestamp: DateTime =
       TimeUtilities.standardWarp(lastTimeStamp.plusMillis(exponentialRandomValue(beta).toInt + SESSION_BREAK))
     while (! keepThisDate(lastTimeStamp, nextTimestamp)) {
-      nextTimestamp = TimeUtilities.standardWarp(lastTimeStamp.plusMillis(exponentialRandomValue(beta).toInt))
+      nextTimestamp = TimeUtilities.standardWarp(nextTimestamp.plusMillis(exponentialRandomValue(beta).toInt))
     }
     nextTimestamp
   }

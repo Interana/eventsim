@@ -48,9 +48,10 @@ object TimeUtilities {
     (dampingFactor * MILLISECONDS_PER_DAY * Math.sin( (ms - offsetMilliSeconds) * 2 * Math.PI / MILLISECONDS_PER_DAY)).toInt
   }
 
-  val THREE_AM = 60 * 3 * 1000
+  val THREE_AM = 3 * 60 * 60 * 1000
   val DEFAULT_DAMPING = 0.0625
-  def standardOffset(ts: DateTime) = warpOffset(ts, THREE_AM, DEFAULT_DAMPING)
-  def standardWarp(ts: DateTime) = ts.plusMillis(warpOffset(ts, THREE_AM, DEFAULT_DAMPING))
+  var damping = DEFAULT_DAMPING
+  def standardOffset(ts: DateTime) = warpOffset(ts, THREE_AM, damping)
+  def standardWarp(ts: DateTime) = ts.plusMillis(warpOffset(ts, THREE_AM, damping))
 
 }
