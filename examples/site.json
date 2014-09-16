@@ -1,40 +1,97 @@
-{"initial" : [
-    {"state":"Search", "p":0.10},
-    {"state":"Guest", "p":0.22},
-    {"state":"Login", "p":0.05},
-    {"state":"News", "p":0.125},
-    {"state":"404", "p":0.005},
-    {"state":"Home", "p":0.5}
+{"alpha" : 60000.0,
+ "beta" : 259200000.0,
+ "damping" : 0.0625,
+ "show-user-details" : [
+    {"status" : "Guest", "show" : false},
+    {"status" : "Logged In", "show" : true},
+    {"status" : "Logged Out", "show" : false}
  ],
- "transitions" : [
-     {"source":"Guest", "dest":"Login", "p":0.7},
-     {"source":"Guest", "dest":"404", "p":0.001},
-     {"source":"Login", "dest":"Home", "p":0.24},
-     {"source":"Login", "dest":"Home", "p":0.18},
-     {"source":"Login", "dest":"Search", "p":0.12},
-     {"source":"Login", "dest":"404", "p":0.003},
-     {"source":"Search", "dest":"Search Results", "p":0.4},
-     {"source":"Search", "dest":"Home Page", "p":0.1},
-     {"source":"Search", "dest":"404", "p":0.002},
-     {"source":"Search", "dest":"News", "p":0.02},
-     {"source":"Search", "dest":"Search", "p":0.04},
-     {"source":"Search Results", "dest":"Search Results", "p":0.55},
-     {"source":"Search Results", "dest":"Search", "p":0.2},
-     {"source":"Search Results", "dest":"404", "p":0.001},
-     {"source":"Search Results", "dest":"Home", "p":0.05},
-     {"source":"Search Results", "dest":"News", "p":0.07},
-     {"source":"Home", "dest":"Settings", "p":0.01},
-     {"source":"Home", "dest":"Logout", "p":0.01},
-     {"source":"Home", "dest":"Home", "p":0.1},
-     {"source":"Home", "dest":"Search", "p":0.4},
-     {"source":"Home", "dest":"News", "p":0.4},
-     {"source":"Home", "dest":"404", "p":0.0025},
-     {"source":"News", "dest":"News", "p":0.35},
-     {"source":"News", "dest":"Search", "p":0.1},
-     {"source":"News", "dest":"404", "p":0.005},
-     {"source":"News", "dest":"Home", "p":0.25},
-     {"source":"404", "dest":"Home", "p":0.5},
-     {"source":"404", "dest":"Search", "p":0.2},
-     {"source":"404", "dest":"News", "p":0.2}
- ]
-}
+ "new-session" : [
+    {"page":"Search", "status" : "Logged In", "p":0.0358},
+    {"page":"Login", "status" : "Logged In", "p":0.0716},
+    {"page":"News", "status" : "Logged In", "p":0.0716},
+    {"page":"404", "status" : "Logged In", "p":0.0072},
+    {"page":"Home", "status" : "Logged In", "p":0.7163},
+
+    {"page":"Search", "status" : "Logged Out", "p":0.0036},
+    {"page":"Guest", "status" : "Logged Out", "p":0.0072},
+    {"page":"Login", "status" : "Logged Out", "p":0.0072},
+    {"page":"News", "status" : "Logged Out", "p":0.0072},
+    {"page":"404", "status" : "Logged Out", "p":0.0007},
+    {"page":"Home", "status" : "Logged Out", "p":0.0716}
+
+    ],
+ "new-user" : [
+       {"page":"Search", "status" : "Guest", "p":0.10},
+       {"page":"Guest", "status" : "Guest", "p":0.22},
+       {"page":"Login", "status" : "Guest", "p":0.05},
+       {"page":"News", "status" : "Guest", "p":0.125},
+       {"page":"404", "status" : "Guest", "p":0.005},
+       {"page":"Home", "status" : "Guest", "p":0.5}
+    ],
+  "transitions" : [
+      {"sourcePage":"Guest", "sourceStatus": "Guest", "destStatus": "Guest", "destPage":"Guest", "p":0.2},
+      {"sourcePage":"Guest", "sourceStatus": "Guest", "destStatus": "Guest", "destPage":"Register", "p":0.8},
+      {"sourcePage":"Search","sourceStatus": "Guest", "destStatus": "Guest", "destPage":"Guest", "p":0.80},
+      {"sourcePage":"Login", "sourceStatus": "Guest", "destStatus": "Guest", "destPage":"Guest", "p":0.80},
+      {"sourcePage":"News",  "sourceStatus": "Guest", "destStatus": "Guest", "destPage":"Guest", "p":0.80},
+      {"sourcePage":"404",   "sourceStatus": "Guest", "destStatus": "Guest", "destPage":"Guest", "p":0.80},
+      {"sourcePage":"Home",  "sourceStatus": "Guest", "destStatus": "Guest", "destPage":"Guest", "p":0.80},
+
+      {"sourcePage":"Register", "sourceStatus": "Guest", "destStatus": "Guest", "destPage":"Register", "p":0.2},
+      {"sourcePage":"Register", "sourceStatus": "Guest", "destStatus": "Unconfirmed", "destPage":"Home", "p":0.4},
+
+      {"sourcePage":"Guest", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"Login", "p":0.7},
+      {"sourcePage":"Guest", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"Register", "p":0.1},
+      {"sourcePage":"Guest", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"404", "p":0.001},
+
+      {"sourcePage":"Register", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"Register", "p":0.1},
+      {"sourcePage":"Register", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"Login", "p":0.6},
+      {"sourcePage":"Register", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"Guest", "p":0.1},
+
+      {"sourcePage":"Login", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Home", "p":0.24},
+      {"sourcePage":"Login", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Home", "p":0.18},
+      {"sourcePage":"Login", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Search", "p":0.12},
+      {"sourcePage":"Login", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"404", "p":0.003},
+      {"sourcePage":"Search", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Search Results", "p":0.4},
+      {"sourcePage":"Search", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Home Page", "p":0.1},
+      {"sourcePage":"Search", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"404", "p":0.002},
+      {"sourcePage":"Search", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"News", "p":0.02},
+      {"sourcePage":"Search", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Search", "p":0.04},
+
+      {"sourcePage":"Search", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"Search", "p":0.05},
+      {"sourcePage":"Search", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"Login", "p":0.50},
+      {"sourcePage":"Search", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"Home", "p":0.30},
+
+      {"sourcePage":"Search Results", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Search Results", "p":0.55},
+      {"sourcePage":"Search Results", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Search", "p":0.2},
+      {"sourcePage":"Search Results", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"404", "p":0.001},
+      {"sourcePage":"Search Results", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Home", "p":0.05},
+      {"sourcePage":"Search Results", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"News", "p":0.07},
+      {"sourcePage":"Home", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Settings", "p":0.01},
+      {"sourcePage":"Home", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Logout", "p":0.01},
+      {"sourcePage":"Home", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Home", "p":0.1},
+      {"sourcePage":"Home", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Search", "p":0.4},
+      {"sourcePage":"Home", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"News", "p":0.4},
+      {"sourcePage":"Home", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"404", "p":0.0025},
+      {"sourcePage":"News", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"News", "p":0.35},
+      {"sourcePage":"News", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Search", "p":0.1},
+      {"sourcePage":"News", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"404", "p":0.005},
+      {"sourcePage":"News", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Home", "p":0.25},
+
+        {"sourcePage":"News", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"News", "p":0.05},
+        {"sourcePage":"News", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"Login", "p":0.50},
+        {"sourcePage":"News", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"Home", "p":0.30},
+
+
+      {"sourcePage":"404", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Home", "p":0.5},
+      {"sourcePage":"404", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Search", "p":0.2},
+      {"sourcePage":"404", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"News", "p":0.2},
+
+        {"sourcePage":"404", "sourceStatus": "Logged Out", "destStatus": "Logged In", "destPage":"404", "p":0.01},
+        {"sourcePage":"404", "sourceStatus": "Logged Out", "destStatus": "Logged In", "destPage":"Home", "p":0.2},
+        {"sourcePage":"404", "sourceStatus": "Logged Out", "destStatus": "Logged In", "destPage":"Login", "p":0.4}
+
+
+  ]
+ }

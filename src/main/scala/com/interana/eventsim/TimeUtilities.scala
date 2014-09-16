@@ -3,6 +3,7 @@ package com.interana.eventsim
 import de.jollyday.{HolidayCalendar, HolidayManager}
 import org.apache.commons.math3.random.{MersenneTwister, RandomGenerator}
 import org.joda.time.{DateTime, DateTimeConstants, LocalDate}
+import Constants._
 
 object TimeUtilities {
 
@@ -41,17 +42,13 @@ object TimeUtilities {
     newTs.isAfter(lastTs) && !((isHoliday(newTs) || isWeekend(newTs)) && wd)
   }
 
-  val MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000
 
   def warpOffset(ts:DateTime, offsetMilliSeconds: Long, dampingFactor: Double): Int = {
     val ms = ts.millisOfDay().get().toLong
     (dampingFactor * MILLISECONDS_PER_DAY * Math.sin( (ms - offsetMilliSeconds) * 2 * Math.PI / MILLISECONDS_PER_DAY)).toInt
   }
 
-  val THREE_AM = 3 * 60 * 60 * 1000
-  val DEFAULT_DAMPING = 0.0625
-  var damping = DEFAULT_DAMPING
-  def standardOffset(ts: DateTime) = warpOffset(ts, THREE_AM, damping)
-  def standardWarp(ts: DateTime) = ts.plusMillis(warpOffset(ts, THREE_AM, damping))
+  def standardOffset(ts: DateTime) = warpOffset(ts, THREE_AM, SiteConfig.damping)
+  def standardWarp(ts: DateTime) = ts.plusMillis(warpOffset(ts, THREE_AM, SiteConfig.damping))
 
 }

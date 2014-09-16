@@ -19,14 +19,13 @@ object Main extends App {
 
   object Conf extends ScallopConf(args) {
     val nUsers: ScallopOption[Int] =
-      opt[Int]("nusers", descr = "number of users",
+      opt[Int]("nusers", descr = "initial number of users",
         required = false, default = Option(1))
-    val alpha: ScallopOption[Double] =
-      opt[Double]("alpha", descr = "expected request inter-arrival time",
-        required = false, default = Option(60000))
-    val beta: ScallopOption[Double] =
-      opt[Double]("beta", descr = "expected session inter-arrival time",
-        required = false, default = Option(TimeUtilities.MILLISECONDS_PER_DAY * 3))
+
+    val rate: ScallopOption[Double] =
+      opt[Double]("rate", descr = "annual user growth rate (as a fraction of current, so 1% => 0.01)",
+        required = false, default = Option(0.0))
+
     val startTimeArg: ScallopOption[String] =
       opt[String]("start-time", descr = "start time for data",
         required = false, default = Option(new DateTime().minusDays(14).toString(ISODateTimeFormat.dateTime()))
@@ -42,12 +41,8 @@ object Main extends App {
     val to: ScallopOption[Int] =
       opt[Int]("to", descr = "to y days ago", required=false,default=Option(1))
 
-    val graph: ScallopOption[String] =
-      opt[String]("graph", descr = "transition graph", required=true)
-
-    val damping: ScallopOption[Float] =
-      opt[Float]("damping", descr = "damping factor for daily traffic, between 0 and 0.125",
-        required=false, validate=( (f:Float) => (f>=0 && f <=0.125)))
+    val configFile: ScallopOption[String] =
+      opt[String]("config", descr = "config file", required=true)
 
     val verbose = toggle("verbose", default = Some(false), descrYes = "verbose output (not implemented yet)", descrNo = "silent mode")
     val outputFile: ScallopOption[String] = trailArg[String]("output-file", required = false, descr = "File name")
@@ -57,19 +52,16 @@ object Main extends App {
   val startTime = if (Conf.startTimeArg.isSupplied) {new DateTime(Conf.startTimeArg())} else {new DateTime().minusDays(Conf.from())}
   val endTime = if (Conf.endTimeArg.isSupplied) {new DateTime(Conf.endTimeArg())} else {new DateTime().minusDays(Conf.to())}
 
-  val initialState = State.stateFileLoader(Conf.graph())
-
-  println("initial State = " + initialState.toString())
-
-  if (Conf.damping.isSupplied) TimeUtilities.damping = Conf.damping()
+  SiteConfig.configFileLoader(Conf.configFile())
 
   (0 until Conf.nUsers()).foreach((_) =>
     users += new User(
-      Conf.alpha() * logNormalRandomValue, // alpha = expected request inter-arrival time
-      Conf.beta() * logNormalRandomValue, // beta = expected session inter-arrival time
+      SiteConfig.alpha * logNormalRandomValue, // alpha = expected request inter-arrival time
+      SiteConfig.beta * logNormalRandomValue, // beta = expected session inter-arrival time
       startTime, // start time
-      initialState, // start state
-      UserProperties.randomProps // properties
+      SiteConfig.initialState, // initial session states
+      UserProperties.randomProps,
+      DeviceProperties.randomProps
     ))
 
   val out = if (Conf.outputFile.isSupplied) {

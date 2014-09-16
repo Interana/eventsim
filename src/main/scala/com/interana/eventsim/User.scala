@@ -10,11 +10,13 @@ import scala.util.parsing.json.JSONObject
 class User(val alpha: Double, // alpha = expected request inter-arrival time
            val beta: Double,  // beta  = expected session inter-arrival time
            val startTime: DateTime,
-           val initialState: State,
-           val props: scala.collection.immutable.Map[String,Any]) extends Serializable with Ordered[User] {
+           val initialSessionStates: State,
+           val props: scala.collection.immutable.Map[String,Any],
+           var device: scala.collection.immutable.Map[String,Any]
+          ) extends Serializable with Ordered[User] {
 
   val userId = Counters.nextUserId
-  var session = new Session(Session.pickFirstTimeStamp(startTime, alpha, beta), alpha, beta, initialState)
+  var session = new Session(Session.pickFirstTimeStamp(startTime, alpha, beta), alpha, beta, initialSessionStates)
 
   override def compare(that: User): Int = that.session.nextEventTimeStamp.compareTo(this.session.nextEventTimeStamp)
 
@@ -24,14 +26,19 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
       session = session.nextSession
   }
 
+  private val EMPTY_MAP = Map()
+
   def eventString = {
-    val m = props.+(
+    val showUserDetails = SiteConfig.showUserWithStatus(session.currentState.status)
+    val m = device.+(
       "ts" -> session.nextEventTimeStamp.getMillis,
-      "userId" -> userId,
+      "userId" -> (if (showUserDetails) userId else ""),
       "sessionId" -> session.sessionId,
-      "page" -> session.currentState.name,
+      "page" -> session.currentState.page,
+      "status" -> session.currentState.status,
       "itemInSession" -> session.itemInSession
-    )
+    ).++(if (showUserDetails) props else EMPTY_MAP)
+
     val j = new JSONObject(m)
     j.toString()
   }
@@ -46,7 +53,7 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
     "alpha" -> alpha,
     "beta" -> beta,
     "startTime" -> tsToString(startTime),
-    "initialState" -> initialState ,
+    "initialSessionStates" -> initialSessionStates,
     "nextEventTimeStamp" -> tsToString(session.nextEventTimeStamp) ,
     //"sessionEndTimeStamp" -> tsToString(session.sessionEndTimeStamp) ,
     "sessionId" -> session.sessionId ,
