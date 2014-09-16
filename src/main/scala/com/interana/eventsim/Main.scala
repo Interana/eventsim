@@ -22,8 +22,12 @@ object Main extends App {
       opt[Int]("nusers", descr = "initial number of users",
         required = false, default = Option(1))
 
-    val rate: ScallopOption[Double] =
-      opt[Double]("rate", descr = "annual user growth rate (as a fraction of current, so 1% => 0.01)",
+    val growthRate: ScallopOption[Double] =
+      opt[Double]("growth-rate", descr = "annual user growth rate (as a fraction of current, so 1% => 0.01)",
+        required = false, default = Option(0.0))
+
+    val attritionRate: ScallopOption[Double] =
+      opt[Double]("attrition-rate", descr = "annual user attrition rate (as a fraction of current, so 1% => 0.01)",
         required = false, default = Option(0.0))
 
     val startTimeArg: ScallopOption[String] =
@@ -54,7 +58,9 @@ object Main extends App {
 
   SiteConfig.configFileLoader(Conf.configFile())
 
-  (0 until Conf.nUsers()).foreach((_) =>
+  var nUsers = Conf.nUsers()
+
+  (0 until nUsers).foreach((_) =>
     users += new User(
       SiteConfig.alpha * logNormalRandomValue, // alpha = expected request inter-arrival time
       SiteConfig.beta * logNormalRandomValue, // beta = expected session inter-arrival time
@@ -64,12 +70,33 @@ object Main extends App {
       DeviceProperties.randomProps
     ))
 
+  // val durationInSeconds = new Interval(startTime, endTime).toDuration().getStandardSeconds
+  // val fractionOfYear = durationInSeconds / Constants.SECONDS_PER_YEAR
+  if (Conf.growthRate() > 0) {
+    var current = startTime
+    while (current.isBefore(endTime)) {
+      val mu = Constants.SECONDS_PER_YEAR / (nUsers * Conf.growthRate())
+      current = current.plusSeconds(TimeUtilities.exponentialRandomValue(mu).toInt)
+      users += new User(
+        SiteConfig.alpha * logNormalRandomValue, // alpha = expected request inter-arrival time
+        SiteConfig.beta * logNormalRandomValue, // beta = expected session inter-arrival time
+        current, // start time
+        SiteConfig.newUserState, // initial session states
+        UserProperties.randomProps,
+        DeviceProperties.randomProps
+      )
+      nUsers += 1
+    }
+  }
+  System.err.println("Initial number of users: " + Conf.nUsers() + ", Final number of users: " + nUsers)
+
   val out = if (Conf.outputFile.isSupplied) {
     new PrintWriter(Conf.outputFile())
   } else {
     new PrintWriter(System.out)
   }
 
+  // TODO: Add attrition
   var clock = startTime
   while (clock.isBefore(endTime)) {
     val u = users.dequeue()

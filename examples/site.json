@@ -1,6 +1,7 @@
 {"alpha" : 60000.0,
  "beta" : 259200000.0,
  "damping" : 0.0625,
+ "churned-state" : "Churned",
  "show-user-details" : [
     {"status" : "Guest", "show" : false},
     {"status" : "Logged In", "show" : true},
@@ -39,7 +40,7 @@
       {"sourcePage":"Home",  "sourceStatus": "Guest", "destStatus": "Guest", "destPage":"Guest", "p":0.80},
 
       {"sourcePage":"Register", "sourceStatus": "Guest", "destStatus": "Guest", "destPage":"Register", "p":0.2},
-      {"sourcePage":"Register", "sourceStatus": "Guest", "destStatus": "Unconfirmed", "destPage":"Home", "p":0.4},
+      {"sourcePage":"Register", "sourceStatus": "Guest", "destStatus": "Logged In", "destPage":"Home", "p":0.4},
 
       {"sourcePage":"Guest", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"Login", "p":0.7},
       {"sourcePage":"Guest", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"Register", "p":0.1},

@@ -4,7 +4,7 @@ import scala.collection.mutable
 import scala.io.Source
 
 /**
- * Created by jadler on 9/16/14.
+ *  Site configuration (loaded from JSON file, used to run simulation)
  */
 
 object SiteConfig {
@@ -17,11 +17,13 @@ object SiteConfig {
   var alpha:Double = 60000.0
   var beta:Double  = Constants.MILLISECONDS_PER_DAY * 3
   var damping:Double = Constants.DEFAULT_DAMPING
+  var churnedState:Option[String] = None
 
   // tags for JSON config file
   val TRANSITIONS = "transitions"
   val NEW_SESSION = "new-session"
   val NEW_USER = "new-user"
+  val CHURNED_STATE = "churned-state"
   val SHOW_USER_DETAILS = "show-user-details"
   val PAGE = "page"
   val STATUS = "status"
@@ -63,9 +65,14 @@ object SiteConfig {
       case None =>
     }
 
+    jsonContents.get(CHURNED_STATE) match {
+      case x: Some[Any] => churnedState = Some(x.get.asInstanceOf[String])
+      case None =>
+    }
+
     val states = new mutable.HashMap[(String,String), State]
 
-    val transitions = jsonContents.get(TRANSITIONS).getOrElse(List()).asInstanceOf[List[Any]]
+    val transitions = jsonContents.getOrElse(TRANSITIONS,List()).asInstanceOf[List[Any]]
     for (t <- transitions) {
       val transition = t.asInstanceOf[Map[String,Any]]
       val sourcePage = transition.get(SOURCE_PAGE).get.asInstanceOf[String]
@@ -82,7 +89,7 @@ object SiteConfig {
       states((sourcePage, sourceStatus)).addTransition(states((destPage,destStatus)),p)
     }
 
-    val initial = jsonContents.get(NEW_SESSION).getOrElse(List()).asInstanceOf[List[Any]]
+    val initial = jsonContents.getOrElse(NEW_SESSION,List()).asInstanceOf[List[Any]]
     for (i <- initial) {
       val item = i.asInstanceOf[Map[String,Any]]
       val page = item.get(PAGE).get.asInstanceOf[String]
@@ -95,7 +102,7 @@ object SiteConfig {
       throw new Exception("invalid initial session states (total probability < 1.0)")
 
 
-    val newUser = jsonContents.get(NEW_USER).getOrElse(List()).asInstanceOf[List[Any]]
+    val newUser = jsonContents.getOrElse(NEW_USER,List()).asInstanceOf[List[Any]]
     for (i <- newUser) {
       val item = i.asInstanceOf[Map[String,Any]]
       val page = item.get(PAGE).get.asInstanceOf[String]
@@ -108,7 +115,7 @@ object SiteConfig {
       throw new Exception("invalid new user states (total probability < 1.0)")
 
 
-    val showUserDetails = jsonContents.get(SHOW_USER_DETAILS).getOrElse(List()).asInstanceOf[List[Any]]
+    val showUserDetails = jsonContents.getOrElse(SHOW_USER_DETAILS,List()).asInstanceOf[List[Any]]
     for (i <- showUserDetails) {
       val item = i.asInstanceOf[Map[String,Any]]
       val status = item.get(STATUS).get.asInstanceOf[String]

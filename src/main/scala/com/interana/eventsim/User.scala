@@ -55,7 +55,6 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
     "startTime" -> tsToString(startTime),
     "initialSessionStates" -> initialSessionStates,
     "nextEventTimeStamp" -> tsToString(session.nextEventTimeStamp) ,
-    //"sessionEndTimeStamp" -> tsToString(session.sessionEndTimeStamp) ,
     "sessionId" -> session.sessionId ,
     "userId" -> userId ,
     "currentState" -> session.currentState)
