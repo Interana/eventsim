@@ -98,11 +98,13 @@ object Main extends App {
 
   // TODO: Add attrition
   var clock = startTime
+  nUsers = Conf.nUsers()
   while (clock.isBefore(endTime)) {
     val u = users.dequeue()
+    val prAttrition = nUsers * Conf.attritionRate() * ( (endTime.getMillis()) - startTime.getMillis() / Constants.MILLISECONDS_PER_YEAR)
     clock = u.session.nextEventTimeStamp
     if (clock.isAfter(startTime)) out.println(u.eventString)
-    u.nextEvent()
+    u.nextEvent(prAttrition)
     users += u
   }
 

@@ -5,7 +5,8 @@
  "show-user-details" : [
     {"status" : "Guest", "show" : false},
     {"status" : "Logged In", "show" : true},
-    {"status" : "Logged Out", "show" : false}
+    {"status" : "Logged Out", "show" : false},
+    {"status" : "Churned", "show" : false}
  ],
  "new-session" : [
     {"page":"Search", "status" : "Logged In", "p":0.0358},
@@ -80,18 +81,21 @@
       {"sourcePage":"News", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"404", "p":0.005},
       {"sourcePage":"News", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Home", "p":0.25},
 
-        {"sourcePage":"News", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"News", "p":0.05},
-        {"sourcePage":"News", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"Login", "p":0.50},
-        {"sourcePage":"News", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"Home", "p":0.30},
+      {"sourcePage":"Settings", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Home", "p":0.75},
+      {"sourcePage":"Settings", "sourceStatus": "Logged In", "destStatus": "Churned", "destPage":"Home", "p":0.005},
+
+      {"sourcePage":"News", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"News", "p":0.05},
+      {"sourcePage":"News", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"Login", "p":0.50},
+      {"sourcePage":"News", "sourceStatus": "Logged Out", "destStatus": "Logged Out", "destPage":"Home", "p":0.30},
 
 
       {"sourcePage":"404", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Home", "p":0.5},
       {"sourcePage":"404", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"Search", "p":0.2},
       {"sourcePage":"404", "sourceStatus": "Logged In", "destStatus": "Logged In", "destPage":"News", "p":0.2},
 
-        {"sourcePage":"404", "sourceStatus": "Logged Out", "destStatus": "Logged In", "destPage":"404", "p":0.01},
-        {"sourcePage":"404", "sourceStatus": "Logged Out", "destStatus": "Logged In", "destPage":"Home", "p":0.2},
-        {"sourcePage":"404", "sourceStatus": "Logged Out", "destStatus": "Logged In", "destPage":"Login", "p":0.4}
+      {"sourcePage":"404", "sourceStatus": "Logged Out", "destStatus": "Logged In", "destPage":"404", "p":0.01},
+      {"sourcePage":"404", "sourceStatus": "Logged Out", "destStatus": "Logged In", "destPage":"Home", "p":0.2},
+      {"sourcePage":"404", "sourceStatus": "Logged Out", "destStatus": "Logged In", "destPage":"Login", "p":0.4}
 
 
   ]

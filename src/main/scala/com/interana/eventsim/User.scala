@@ -20,10 +20,18 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
 
   override def compare(that: User): Int = that.session.nextEventTimeStamp.compareTo(this.session.nextEventTimeStamp)
 
-  def nextEvent() = {
+  def nextEvent(): Unit = nextEvent(0.0)
+
+  def nextEvent(prAttrition: Double) = {
     session.incrementEvent()
-    if (session.done)
-      session = session.nextSession
+    if (session.done) {
+      if (TimeUtilities.rng.nextDouble() < prAttrition) {
+        session.nextEventTimeStamp = new DateTime(Long.MaxValue)
+        // TODO: mark as churned
+      }
+      else
+        session = session.nextSession
+    }
   }
 
   private val EMPTY_MAP = Map()

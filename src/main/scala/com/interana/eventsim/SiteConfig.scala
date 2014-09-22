@@ -65,10 +65,12 @@ object SiteConfig {
       case None =>
     }
 
-    jsonContents.get(CHURNED_STATE) match {
-      case x: Some[Any] => churnedState = Some(x.get.asInstanceOf[String])
-      case None =>
-    }
+    churnedState = jsonContents.get(CHURNED_STATE).asInstanceOf[Option[String]]
+
+    //jsonContents.get(CHURNED_STATE) match {
+    //  case x: Some[Any] => churnedState = Some(x.get.asInstanceOf[String])
+    //  case None =>
+    //}
 
     val states = new mutable.HashMap[(String,String), State]
 
@@ -101,7 +103,6 @@ object SiteConfig {
     if (initialState.maxP < 1.0)
       throw new Exception("invalid initial session states (total probability < 1.0)")
 
-
     val newUser = jsonContents.getOrElse(NEW_USER,List()).asInstanceOf[List[Any]]
     for (i <- newUser) {
       val item = i.asInstanceOf[Map[String,Any]]
@@ -113,7 +114,6 @@ object SiteConfig {
 
     if (newUserState.maxP < 1.0)
       throw new Exception("invalid new user states (total probability < 1.0)")
-
 
     val showUserDetails = jsonContents.getOrElse(SHOW_USER_DETAILS,List()).asInstanceOf[List[Any]]
     for (i <- showUserDetails) {
