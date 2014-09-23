@@ -1,5 +1,6 @@
-{"alpha" : 60000.0,
- "beta" : 259200000.0,
+{"seed" : 0,
+ "alpha" : 60.0,
+ "beta" : 259200.0,
  "damping" : 0.0625,
  "churned-state" : "Churned",
  "show-user-details" : [

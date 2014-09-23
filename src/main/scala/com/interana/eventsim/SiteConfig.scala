@@ -14,10 +14,11 @@ object SiteConfig {
   val showUserWithStatus = new mutable.HashMap[String, Boolean]()
 
   // optional config values
-  var alpha:Double = 60000.0
-  var beta:Double  = Constants.MILLISECONDS_PER_DAY * 3
+  var alpha:Double = 60.0
+  var beta:Double  = Constants.SECONDS_PER_DAY * 3
   var damping:Double = Constants.DEFAULT_DAMPING
   var churnedState:Option[String] = None
+  var seed = 0L
 
   // tags for JSON config file
   val TRANSITIONS = "transitions"
@@ -33,6 +34,7 @@ object SiteConfig {
   val DEST_PAGE = "destPage"
   val DEST_STATUS = "destStatus"
   val P = "p"
+  val SEED = "seed"
 
   val ALPHA = "alpha"
   val BETA = "beta"
@@ -62,6 +64,11 @@ object SiteConfig {
 
     jsonContents.get(DAMPING) match {
       case x: Some[Any] => damping = x.get.asInstanceOf[Double]
+      case None =>
+    }
+
+    jsonContents.get(SEED) match {
+      case x: Some[Any] => seed = x.get.asInstanceOf[Double].toLong
       case None =>
     }
 

@@ -20,7 +20,7 @@ object TimeUtilities {
 
   def isWeekendOrHoliday(ld: LocalDate) = isWeekend(ld) || isHoliday(ld)
 
-  val rng: RandomGenerator = new MersenneTwister(0L)
+  val rng: RandomGenerator = new MersenneTwister(SiteConfig.seed)
   // If X has a standard uniform distribution, then by the inverse transform sampling method,
   // Y = − (1/λ) ln(X) has an exponential distribution with (rate) parameter λ
   // mu = (1 / lambda)
@@ -43,12 +43,26 @@ object TimeUtilities {
   }
 
 
-  def warpOffset(ts:DateTime, offsetMilliSeconds: Long, dampingFactor: Double): Int = {
+  def warpOffset(ts:DateTime, offsetSeconds: Long, dampingFactor: Double): Int = {
     val ms = ts.millisOfDay().get().toLong
-    (dampingFactor * MILLISECONDS_PER_DAY * Math.sin( (ms - offsetMilliSeconds) * 2 * Math.PI / MILLISECONDS_PER_DAY)).toInt
+    (dampingFactor * SECONDS_PER_DAY * Math.sin( (ms - offsetSeconds) * 2 * Math.PI / SECONDS_PER_DAY)).toInt
   }
 
   def standardOffset(ts: DateTime) = warpOffset(ts, THREE_AM, SiteConfig.damping)
-  def standardWarp(ts: DateTime) = ts.plusMillis(warpOffset(ts, THREE_AM, SiteConfig.damping))
+  def standardWarp(ts: DateTime) = ts.plusSeconds(warpOffset(ts, THREE_AM, SiteConfig.damping))
+
+  def reverseWarpOffset(ts: DateTime, offsetSeconds: Long, dampingFactor: Double): Int = {
+    val ms = ts.secondOfDay().get().toLong
+    // ms = (dampingFactor * MILLISECONDS_PER_DAY * Math.sin( (out - offsetMilliSeconds) * 2 * Math.PI / MILLISECONDS_PER_DAY)).toInt
+    // ms = dampingFactor * MILLISECONDS_PER_DAY * Math.sin( (out - offsetMilliSeconds) * 2 * Math.PI / MILLISECONDS_PER_DAY)
+    // ms / (dampingFactor * MILLISECONDS_PER_DAY) = Math.sin( (out - offsetMilliSeconds) * 2 * Math.PI / MILLISECONDS_PER_DAY)
+    // (ms / (dampingFactor * MILLISECONDS_PER_DAY)) = Math.sin( (out - offsetMilliSeconds) * 2 * Math.PI / MILLISECONDS_PER_DAY)
+    // Math.asin(ms / (dampingFactor * MILLISECONDS_PER_DAY)) =  (out - offsetMilliSeconds) * 2 * Math.PI / MILLISECONDS_PER_DAY
+    // Math.asin(ms / (dampingFactor * MILLISECONDS_PER_DAY)) / (2 * Math.PI / MILLISECONDS_PER_DAY )=  (out - offsetMilliSeconds)
+    // (Math.asin(ms / (dampingFactor * MILLISECONDS_PER_DAY)) / (2 * Math.PI / MILLISECONDS_PER_DAY )) + offsetMilliSeconds =  out
+    (Math.asin(ms / (dampingFactor * SECONDS_PER_DAY)) / (2 * Math.PI / SECONDS_PER_DAY ) + offsetSeconds).toInt
+  }
+
+  def reverseStandardWarp(ts: DateTime) = ts.minusSeconds(reverseWarpOffset(ts, THREE_AM, SiteConfig.damping))
 
 }

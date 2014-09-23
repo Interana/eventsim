@@ -2,7 +2,6 @@ package com.interana.eventsim
 
 import java.io.PrintWriter
 
-import org.apache.commons.math3.random.{MersenneTwister, RandomGenerator}
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
 import org.rogach.scallop.{ScallopConf, ScallopOption}
@@ -10,10 +9,9 @@ import org.rogach.scallop.{ScallopConf, ScallopOption}
 import scala.collection.mutable
 
 object Main extends App {
-  val rng: RandomGenerator = new MersenneTwister(1L)
   private val sqrtE = Math.exp(0.5)
 
-  def logNormalRandomValue = Math.exp(rng.nextGaussian()) / sqrtE
+  def logNormalRandomValue = Math.exp(TimeUtilities.rng.nextGaussian()) / sqrtE
 
   val users = new mutable.PriorityQueue[User]()
 
@@ -96,17 +94,32 @@ object Main extends App {
     new PrintWriter(System.out)
   }
 
+  val startTimeString = startTime.toString(ISODateTimeFormat.dateHourMinuteSecond())
+  val endTimeString = endTime.toString(ISODateTimeFormat.dateHourMinuteSecond())
+  def showProgress(n: DateTime, users: Int): Unit = {
+    var message = "Start: " + startTimeString + ", End: " + endTimeString +
+      ", Now: " + n.toString(ISODateTimeFormat.dateHourMinuteSecond()) + ", Events:" + events
+    System.err.write("\r".getBytes)
+    System.err.write(message.getBytes)
+  }
+  System.err.println("Starting to generate events.")
+
   // TODO: Add attrition
   var clock = startTime
-  nUsers = Conf.nUsers()
+  var events = 1
   while (clock.isBefore(endTime)) {
+
+    showProgress(clock, users.length)
     val u = users.dequeue()
-    val prAttrition = nUsers * Conf.attritionRate() * ( (endTime.getMillis()) - startTime.getMillis() / Constants.MILLISECONDS_PER_YEAR)
-    clock = u.session.nextEventTimeStamp
+    val prAttrition = nUsers * Conf.attritionRate() * ( endTime.getMillis - startTime.getMillis / Constants.SECONDS_PER_YEAR)
+    clock = u.session.nextEventTimeStamp.get
+
     if (clock.isAfter(startTime)) out.println(u.eventString)
     u.nextEvent(prAttrition)
     users += u
+    events += 1
   }
+  println("")
 
 }
 

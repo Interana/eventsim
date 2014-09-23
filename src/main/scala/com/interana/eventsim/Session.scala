@@ -9,7 +9,7 @@ import org.joda.time.DateTime
  * Object to capture session related calculations and properties
  *
  */
-class Session(var nextEventTimeStamp: DateTime,
+class Session(var nextEventTimeStamp: Option[DateTime],
               val alpha: Double, // alpha = expected request inter-arrival time
               val beta: Double,  // beta  = expected session inter-arrival time
               val initialState: State) {
@@ -20,10 +20,10 @@ class Session(var nextEventTimeStamp: DateTime,
   var currentState:State = initialState.nextState(rng).get
 
   def incrementEvent() = {
-    val nextTimestamp = nextEventTimeStamp.plusMillis(exponentialRandomValue(alpha).toInt)
+    val nextTimestamp = nextEventTimeStamp.get.plusSeconds(exponentialRandomValue(alpha).toInt)
     val nextState = currentState.nextState(rng)
     if (nextState.nonEmpty) {
-      nextEventTimeStamp = nextTimestamp
+      nextEventTimeStamp = Some(nextTimestamp)
       currentState = nextState.get
       itemInSession += 1
     } else {
@@ -32,7 +32,7 @@ class Session(var nextEventTimeStamp: DateTime,
   }
 
   def nextSession =
-    new Session(Session.pickNextSessionStartTime(nextEventTimeStamp, beta), alpha, beta, initialState)
+    new Session(Some(Session.pickNextSessionStartTime(nextEventTimeStamp.get, beta)), alpha, beta, initialState)
 
 }
 
@@ -45,20 +45,49 @@ object Session {
     beta: Double  // beta  = expected session inter-arrival time
    ): DateTime = {
     // pick random start point, iterate to steady state
-    val startPoint = st.minusMillis(beta.toInt * 3)
+    val startPoint = st.minusSeconds(beta.toInt * 3)
     var candidate = pickNextSessionStartTime(startPoint, beta)
-    while (new DateTime(candidate).isBefore(new DateTime(st).minusMillis(alpha.toInt * 3))) {
+    while (new DateTime(candidate).isBefore(new DateTime(st).minusSeconds(alpha.toInt * 3))) {
       candidate = pickNextSessionStartTime(candidate, beta)
     }
     candidate
   }
 
-  def pickNextSessionStartTime(lastTimeStamp: DateTime, beta: Double) = {
-    var nextTimestamp: DateTime =
-      TimeUtilities.standardWarp(lastTimeStamp.plusMillis(exponentialRandomValue(beta).toInt + SESSION_BREAK))
+  def pickNextSessionStartTime(lastTimeStamp: DateTime, beta: Double): DateTime = {
+    val randomGap = exponentialRandomValue(beta).toInt + SESSION_BREAK
+    val nextTimestamp: DateTime = lastTimeStamp.plusSeconds(randomGap)
+
+    /*
+    System.err.write(("\r pickNextSessionStartTime (Last=" +
+      lastTimeStamp.toString(ISODateTimeFormat.dateTime()) +
+      ", Next=" + nextTimestamp.toString(ISODateTimeFormat.dateTime()) +
+      ", beta=" + beta.toString() +
+      ", randomGap=" + randomGap + "\n"
+
+      ).getBytes)
+     */
+
+    assert(randomGap > 0)
+
+    if (keepThisDate(lastTimeStamp, nextTimestamp)) {
+      if (randomGap > Constants.SECONDS_PER_DAY)
+        TimeUtilities.standardWarp(nextTimestamp)
+      else
+        nextTimestamp
+    } else
+      pickNextSessionStartTime(lastTimeStamp, beta)
+
+    /*
+    var ticker = 1
     while (! keepThisDate(lastTimeStamp, nextTimestamp)) {
-      nextTimestamp = TimeUtilities.standardWarp(nextTimestamp.plusMillis(exponentialRandomValue(beta).toInt))
+      System.err.write(("\r pickNextSessionStartTime (Last=" +
+        lastTimeStamp.toString(ISODateTimeFormat.dateTime()) +
+        ", Next=" + nextTimestamp.toString(ISODateTimeFormat.dateTime()) +
+        ") ticker=" + ticker.toInt).getBytes)
+      ticker += 1
+      nextTimestamp = nextTimestamp.plusMillis(exponentialRandomValue(beta).toInt)
     }
-    nextTimestamp
+    TimeUtilities.standardWarp(nextTimestamp)
+    */
   }
 }

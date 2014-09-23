@@ -16,9 +16,17 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
           ) extends Serializable with Ordered[User] {
 
   val userId = Counters.nextUserId
-  var session = new Session(Session.pickFirstTimeStamp(startTime, alpha, beta), alpha, beta, initialSessionStates)
+  var session = new Session(
+    Some(Session.pickFirstTimeStamp(startTime, alpha, beta)), alpha, beta, initialSessionStates)
 
-  override def compare(that: User): Int = that.session.nextEventTimeStamp.compareTo(this.session.nextEventTimeStamp)
+  override def compare(that: User): Int =
+    (that.session.nextEventTimeStamp, this.session.nextEventTimeStamp) match {
+      case (None, None) => 0
+      case (_: Some[DateTime], None) => -1
+      case (None, _: Some[DateTime]) => 1
+      case (thatValue: Some[DateTime], thisValue: Some[DateTime]) =>
+        thatValue.get.compareTo(thisValue.get)
+    }
 
   def nextEvent(): Unit = nextEvent(0.0)
 
@@ -26,7 +34,7 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
     session.incrementEvent()
     if (session.done) {
       if (TimeUtilities.rng.nextDouble() < prAttrition) {
-        session.nextEventTimeStamp = new DateTime(Long.MaxValue)
+        session.nextEventTimeStamp = None
         // TODO: mark as churned
       }
       else
@@ -39,7 +47,7 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
   def eventString = {
     val showUserDetails = SiteConfig.showUserWithStatus(session.currentState.status)
     val m = device.+(
-      "ts" -> session.nextEventTimeStamp.getMillis,
+      "ts" -> session.nextEventTimeStamp.get.getMillis,
       "userId" -> (if (showUserDetails) userId else ""),
       "sessionId" -> session.sessionId,
       "page" -> session.currentState.page,
@@ -55,14 +63,14 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
       ts.toString(ISODateTimeFormat.dateTime())
   }
 
-  def nextEventTimeStampString = tsToString(this.session.nextEventTimeStamp)
+  def nextEventTimeStampString = tsToString(this.session.nextEventTimeStamp.get)
 
   def mkString = props.+(
     "alpha" -> alpha,
     "beta" -> beta,
     "startTime" -> tsToString(startTime),
     "initialSessionStates" -> initialSessionStates,
-    "nextEventTimeStamp" -> tsToString(session.nextEventTimeStamp) ,
+    "nextEventTimeStamp" -> tsToString(session.nextEventTimeStamp.get) ,
     "sessionId" -> session.sessionId ,
     "userId" -> userId ,
     "currentState" -> session.currentState)
