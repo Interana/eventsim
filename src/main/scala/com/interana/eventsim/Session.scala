@@ -38,24 +38,22 @@ class Session(var nextEventTimeStamp: Option[DateTime],
 
 object Session {
 
-  val SESSION_BREAK = 30 * 60 * 1000
-
   def pickFirstTimeStamp(st: DateTime,
     alpha: Double, // alpha = expected request inter-arrival time
     beta: Double  // beta  = expected session inter-arrival time
    ): DateTime = {
     // pick random start point, iterate to steady state
-    val startPoint = st.minusSeconds(beta.toInt * 3)
+    val startPoint = st.minusSeconds(beta.toInt * 2)
     var candidate = pickNextSessionStartTime(startPoint, beta)
-    while (new DateTime(candidate).isBefore(new DateTime(st).minusSeconds(alpha.toInt * 3))) {
+    while (new DateTime(candidate).isBefore(new DateTime(st).minusSeconds(beta.toInt))) {
       candidate = pickNextSessionStartTime(candidate, beta)
     }
     candidate
   }
 
   def pickNextSessionStartTime(lastTimeStamp: DateTime, beta: Double): DateTime = {
-    val randomGap = exponentialRandomValue(beta).toInt + SESSION_BREAK
-    val nextTimestamp: DateTime = lastTimeStamp.plusSeconds(randomGap)
+    val randomGap = exponentialRandomValue(beta).toInt + SiteConfig.sessionGap
+    val nextTimestamp: DateTime = TimeUtilities.standardWarp(lastTimeStamp.plusSeconds(randomGap))
 
     /*
     System.err.write(("\r pickNextSessionStartTime (Last=" +
@@ -70,12 +68,13 @@ object Session {
     assert(randomGap > 0)
 
     if (keepThisDate(lastTimeStamp, nextTimestamp)) {
-      if (randomGap > Constants.SECONDS_PER_DAY)
-        TimeUtilities.standardWarp(nextTimestamp)
-      else
-        nextTimestamp
+      nextTimestamp
+      //if (randomGap > Constants.SECONDS_PER_DAY)
+      //  TimeUtilities.standardWarp(nextTimestamp)
+      //else
+      //  nextTimestamp
     } else
-      pickNextSessionStartTime(lastTimeStamp, beta)
+      pickNextSessionStartTime(nextTimestamp, beta) // forward progress
 
     /*
     var ticker = 1

@@ -17,6 +17,10 @@ object SiteConfig {
   var alpha:Double = 60.0
   var beta:Double  = Constants.SECONDS_PER_DAY * 3
   var damping:Double = Constants.DEFAULT_DAMPING
+  var weekendDamping:Double = Constants.DEFAULT_WEEKEND_DAMPING
+  var weekendDampingOffset:Int = Constants.DEFAULT_WEEKEND_DAMPING_OFFSET
+  var weekendDampingScale:Int = Constants.DEFAULT_WEEKEND_DAMPING_SCALE
+  var sessionGap:Int = Constants.DEFAULT_SESSION_GAP
   var churnedState:Option[String] = None
   var seed = 0L
 
@@ -35,10 +39,15 @@ object SiteConfig {
   val DEST_STATUS = "destStatus"
   val P = "p"
   val SEED = "seed"
+  val SESSION_GAP = "session-gap"
 
   val ALPHA = "alpha"
   val BETA = "beta"
   val DAMPING = "damping"
+  val WEEKEND_DAMPING = "weekend-damping"
+  val WEEKEND_DAMPING_OFFSET = "weekend-damping-offset"
+  val WEEKEND_DAMPING_SCALE = "weekend-damping-scale"
+
 
   def configFileLoader(fn: String) = {
 
@@ -67,8 +76,30 @@ object SiteConfig {
       case None =>
     }
 
+    jsonContents.get(WEEKEND_DAMPING) match {
+      case x: Some[Any] => weekendDamping = x.get.asInstanceOf[Double]
+      case None =>
+    }
+
+    jsonContents.get(WEEKEND_DAMPING_OFFSET) match {
+        // in minutes
+      case x: Some[Any] => weekendDampingOffset = x.get.asInstanceOf[Double].toInt
+      case None =>
+    }
+
+    jsonContents.get(WEEKEND_DAMPING_SCALE) match {
+        // in minutes
+      case x: Some[Any] => weekendDampingScale = x.get.asInstanceOf[Double].toInt
+      case None =>
+    }
+
     jsonContents.get(SEED) match {
       case x: Some[Any] => seed = x.get.asInstanceOf[Double].toLong
+      case None =>
+    }
+
+    jsonContents.get(SESSION_GAP) match {
+      case x: Some[Any] => sessionGap = x.get.asInstanceOf[Double].toInt
       case None =>
     }
 

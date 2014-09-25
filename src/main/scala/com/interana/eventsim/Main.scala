@@ -51,75 +51,109 @@ object Main extends App {
 
   }
 
-  val startTime = if (Conf.startTimeArg.isSupplied) {new DateTime(Conf.startTimeArg())} else {new DateTime().minusDays(Conf.from())}
-  val endTime = if (Conf.endTimeArg.isSupplied) {new DateTime(Conf.endTimeArg())} else {new DateTime().minusDays(Conf.to())}
+  val startTime = if (Conf.startTimeArg.isSupplied) {
+    new DateTime(Conf.startTimeArg())
+  } else {
+    new DateTime().minusDays(Conf.from())
+  }
+  val endTime = if (Conf.endTimeArg.isSupplied) {
+    new DateTime(Conf.endTimeArg())
+  } else {
+    new DateTime().minusDays(Conf.to())
+  }
 
   SiteConfig.configFileLoader(Conf.configFile())
 
   var nUsers = Conf.nUsers()
 
-  (0 until nUsers).foreach((_) =>
-    users += new User(
-      SiteConfig.alpha * logNormalRandomValue, // alpha = expected request inter-arrival time
-      SiteConfig.beta * logNormalRandomValue, // beta = expected session inter-arrival time
-      startTime, // start time
-      SiteConfig.initialState, // initial session states
-      UserProperties.randomProps,
-      DeviceProperties.randomProps
-    ))
+  def doStuff = {
 
-  // val durationInSeconds = new Interval(startTime, endTime).toDuration().getStandardSeconds
-  // val fractionOfYear = durationInSeconds / Constants.SECONDS_PER_YEAR
-  if (Conf.growthRate() > 0) {
-    var current = startTime
-    while (current.isBefore(endTime)) {
-      val mu = Constants.SECONDS_PER_YEAR / (nUsers * Conf.growthRate())
-      current = current.plusSeconds(TimeUtilities.exponentialRandomValue(mu).toInt)
+    (0 until nUsers).foreach((_) =>
       users += new User(
         SiteConfig.alpha * logNormalRandomValue, // alpha = expected request inter-arrival time
         SiteConfig.beta * logNormalRandomValue, // beta = expected session inter-arrival time
-        current, // start time
-        SiteConfig.newUserState, // initial session states
+        startTime, // start time
+        SiteConfig.initialState, // initial session states
         UserProperties.randomProps,
         DeviceProperties.randomProps
-      )
-      nUsers += 1
+      ))
+
+    // val durationInSeconds = new Interval(startTime, endTime).toDuration().getStandardSeconds
+    // val fractionOfYear = durationInSeconds / Constants.SECONDS_PER_YEAR
+    if (Conf.growthRate() > 0) {
+      var current = startTime
+      while (current.isBefore(endTime)) {
+        val mu = Constants.SECONDS_PER_YEAR / (nUsers * Conf.growthRate())
+        current = current.plusSeconds(TimeUtilities.exponentialRandomValue(mu).toInt)
+        users += new User(
+          SiteConfig.alpha * logNormalRandomValue, // alpha = expected request inter-arrival time
+          SiteConfig.beta * logNormalRandomValue, // beta = expected session inter-arrival time
+          current, // start time
+          SiteConfig.newUserState, // initial session states
+          UserProperties.randomProps,
+          DeviceProperties.randomProps
+        )
+        nUsers += 1
+      }
     }
+    System.err.println("Initial number of users: " + Conf.nUsers() + ", Final number of users: " + nUsers)
+
+    val out = if (Conf.outputFile.isSupplied) {
+      new PrintWriter(Conf.outputFile())
+    } else {
+      new PrintWriter(System.out)
+    }
+
+    val startTimeString = startTime.toString(ISODateTimeFormat.dateHourMinuteSecond())
+    val endTimeString = endTime.toString(ISODateTimeFormat.dateHourMinuteSecond())
+    def showProgress(n: DateTime, users: Int, e: Int): Unit = {
+      var message = "Start: " + startTimeString + ", End: " + endTimeString +
+        ", Now: " + n.toString(ISODateTimeFormat.dateHourMinuteSecond()) + ", Events:" + e
+      System.err.write("\r".getBytes)
+      System.err.write(message.getBytes)
+    }
+    System.err.println("Starting to generate events.")
+    System.err.println("Damping=" + SiteConfig.damping + ", Weekend-Damping=" + SiteConfig.weekendDamping)
+
+    // TODO: Add attrition
+    var clock = startTime
+    var events = 1
+    val bins = scala.collection.mutable.HashMap[Long, Int]()
+    while (clock.isBefore(endTime)) {
+      val bin = (clock.getMillis / 3600000L) * 3600L
+      if (clock.isAfter(startTime)) bins.put(bin, if (bins.contains(bin)) bins(bin) + 1 else 1)
+
+      showProgress(clock, users.length, events)
+      val u = users.dequeue()
+      val prAttrition = nUsers * Conf.attritionRate() * (endTime.getMillis - startTime.getMillis / Constants.SECONDS_PER_YEAR)
+      clock = u.session.nextEventTimeStamp.get
+
+      if (clock.isAfter(startTime)) out.println(u.eventString)
+      u.nextEvent(prAttrition)
+      users += u
+      events += 1
+    }
+    System.err.println("")
+
+    bins.foreach((p: (Long, Int)) => println(p._1 + "," + p._2))
+    System.err.println()
   }
-  System.err.println("Initial number of users: " + Conf.nUsers() + ", Final number of users: " + nUsers)
 
-  val out = if (Conf.outputFile.isSupplied) {
-    new PrintWriter(Conf.outputFile())
-  } else {
-    new PrintWriter(System.out)
+  this.doStuff
+
+  /*
+  // for testing
+  println("SiteConfig.weekendDamping=" + SiteConfig.weekendDamping +
+    ", SiteConfig.weekendDampingOffset=" + SiteConfig.weekendDampingOffset +
+    ", SiteConfig.weekendDampingScale=" + SiteConfig.weekendDampingScale)
+  val s = new DateTime(2014,9,26,10,0)
+  val e = new DateTime(2014,9,29,2,0)
+  var now = s
+  while (now.isBefore(e)) {
+    println(now.toString(ISODateTimeFormat.dateHourMinuteSecond()) + ": " + TimeUtilities.weekendDamping(now))
+    now = now.plusMinutes(20)
   }
-
-  val startTimeString = startTime.toString(ISODateTimeFormat.dateHourMinuteSecond())
-  val endTimeString = endTime.toString(ISODateTimeFormat.dateHourMinuteSecond())
-  def showProgress(n: DateTime, users: Int): Unit = {
-    var message = "Start: " + startTimeString + ", End: " + endTimeString +
-      ", Now: " + n.toString(ISODateTimeFormat.dateHourMinuteSecond()) + ", Events:" + events
-    System.err.write("\r".getBytes)
-    System.err.write(message.getBytes)
-  }
-  System.err.println("Starting to generate events.")
-
-  // TODO: Add attrition
-  var clock = startTime
-  var events = 1
-  while (clock.isBefore(endTime)) {
-
-    showProgress(clock, users.length)
-    val u = users.dequeue()
-    val prAttrition = nUsers * Conf.attritionRate() * ( endTime.getMillis - startTime.getMillis / Constants.SECONDS_PER_YEAR)
-    clock = u.session.nextEventTimeStamp.get
-
-    if (clock.isAfter(startTime)) out.println(u.eventString)
-    u.nextEvent(prAttrition)
-    users += u
-    events += 1
-  }
-  println("")
+  */
 
 }
 
