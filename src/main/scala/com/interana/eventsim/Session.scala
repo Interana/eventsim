@@ -20,10 +20,12 @@ class Session(var nextEventTimeStamp: Option[DateTime],
   var currentState:State = initialState.nextState(rng).get
 
   def incrementEvent() = {
-    val nextTimestamp = nextEventTimeStamp.get.plusSeconds(exponentialRandomValue(alpha).toInt)
+
     val nextState = currentState.nextState(rng)
     if (nextState.nonEmpty) {
-      nextEventTimeStamp = Some(nextTimestamp)
+      val nextTimeStamp = nextEventTimeStamp.get.plusSeconds(
+      if (nextState.get.status >= 300 && nextState.get.status <= 399) 1 else exponentialRandomValue(alpha).toInt)
+      nextEventTimeStamp = Some(nextTimeStamp)
       currentState = nextState.get
       itemInSession += 1
     } else {
@@ -54,39 +56,14 @@ object Session {
   def pickNextSessionStartTime(lastTimeStamp: DateTime, beta: Double): DateTime = {
     val randomGap = exponentialRandomValue(beta).toInt + SiteConfig.sessionGap
     val nextTimestamp: DateTime = TimeUtilities.standardWarp(lastTimeStamp.plusSeconds(randomGap))
-
-    /*
-    System.err.write(("\r pickNextSessionStartTime (Last=" +
-      lastTimeStamp.toString(ISODateTimeFormat.dateTime()) +
-      ", Next=" + nextTimestamp.toString(ISODateTimeFormat.dateTime()) +
-      ", beta=" + beta.toString() +
-      ", randomGap=" + randomGap + "\n"
-
-      ).getBytes)
-     */
-
     assert(randomGap > 0)
 
-    if (keepThisDate(lastTimeStamp, nextTimestamp)) {
+    if (nextTimestamp.isBefore(lastTimeStamp)) {
+      // force forward progress
+      pickNextSessionStartTime(lastTimeStamp.plusSeconds(SiteConfig.sessionGap), beta)
+    } else if (keepThisDate(lastTimeStamp, nextTimestamp)) {
       nextTimestamp
-      //if (randomGap > Constants.SECONDS_PER_DAY)
-      //  TimeUtilities.standardWarp(nextTimestamp)
-      //else
-      //  nextTimestamp
     } else
-      pickNextSessionStartTime(nextTimestamp, beta) // forward progress
-
-    /*
-    var ticker = 1
-    while (! keepThisDate(lastTimeStamp, nextTimestamp)) {
-      System.err.write(("\r pickNextSessionStartTime (Last=" +
-        lastTimeStamp.toString(ISODateTimeFormat.dateTime()) +
-        ", Next=" + nextTimestamp.toString(ISODateTimeFormat.dateTime()) +
-        ") ticker=" + ticker.toInt).getBytes)
-      ticker += 1
-      nextTimestamp = nextTimestamp.plusMillis(exponentialRandomValue(beta).toInt)
-    }
-    TimeUtilities.standardWarp(nextTimestamp)
-    */
+      pickNextSessionStartTime(nextTimestamp, beta)
   }
 }

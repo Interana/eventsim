@@ -13,17 +13,19 @@ attributes like names and location as well as usage characteristics.
 You need to specify a configuration file (a sample is included in `examples/site.json`). This file
 specifies how sessions are generated. In this file you specify several parameters:
 
-* Alpha. This is the expected session length for the user (in seconds). This is randomly generated from a lognormal distrbution
-* Beta. This is the expected session interarrival time (in seconds). This is thirty minutes plus a randomly selected value from an exponential distribution
+* Alpha. This is the expected session length for the user (in seconds). This is randomly generated from a lognormal
+distrbution
+* Beta. This is the expected session interarrival time (in seconds). This is thirty minutes plus a randomly selected
+value from an exponential distribution
 * Damping. This is the damping factor for daily cycles
-* Seed. Seed for the random number generateor
+* Seed. Seed for the random number generator
 
 You also specify the event state machine. Each state includes a page and a status. Status should be
 used to describe a user's status: unregistered, logged in, logged out, cancelled, etc. Pages are
 used to describe a user's page. Here is how you specify the state machine:
 
 * Transitions. Describe the pair of page and status before and after each transition, and the
-proability of the transition.
+probability of the transition.
 * New user. Describes the page and status for each new user (and probability of arriving for the
 first time with one of those states.
 * New session. Describes that page and status for each new session.

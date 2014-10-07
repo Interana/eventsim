@@ -118,10 +118,10 @@ object Main extends App {
     // TODO: Add attrition
     var clock = startTime
     var events = 1
-    val bins = scala.collection.mutable.HashMap[Long, Int]()
+    //val bins = scala.collection.mutable.HashMap[Long, Int]()
     while (clock.isBefore(endTime)) {
-      val bin = (clock.getMillis / 3600000L) * 3600L
-      if (clock.isAfter(startTime)) bins.put(bin, if (bins.contains(bin)) bins(bin) + 1 else 1)
+      //val bin = (clock.getMillis / 3600000L) * 3600L
+      //if (clock.isAfter(startTime)) bins.put(bin, if (bins.contains(bin)) bins(bin) + 1 else 1)
 
       showProgress(clock, users.length, events)
       val u = users.dequeue()
@@ -135,25 +135,11 @@ object Main extends App {
     }
     System.err.println("")
 
-    bins.foreach((p: (Long, Int)) => println(p._1 + "," + p._2))
+    //bins.foreach((p: (Long, Int)) => println(p._1 + "," + p._2))
     System.err.println()
   }
 
   this.doStuff
-
-  /*
-  // for testing
-  println("SiteConfig.weekendDamping=" + SiteConfig.weekendDamping +
-    ", SiteConfig.weekendDampingOffset=" + SiteConfig.weekendDampingOffset +
-    ", SiteConfig.weekendDampingScale=" + SiteConfig.weekendDampingScale)
-  val s = new DateTime(2014,9,26,10,0)
-  val e = new DateTime(2014,9,29,2,0)
-  var now = s
-  while (now.isBefore(e)) {
-    println(now.toString(ISODateTimeFormat.dateHourMinuteSecond()) + ": " + TimeUtilities.weekendDamping(now))
-    now = now.plusMinutes(20)
-  }
-  */
 
 }
 

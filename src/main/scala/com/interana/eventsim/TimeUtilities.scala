@@ -51,7 +51,6 @@ object TimeUtilities {
           SiteConfig.weekendDamping *
             (new Interval(nextMidnightMinusOffset, dt).toDurationMillis / 60000) / SiteConfig.weekendDampingScale
 
-
       case (true, false, false) =>
         val lastMidnightPlusOffset = lastMidnight.plusMinutes(SiteConfig.weekendDampingOffset)
         if (dt.isAfter(lastMidnightPlusOffset))
@@ -59,7 +58,6 @@ object TimeUtilities {
         else
           SiteConfig.weekendDamping *
             (new Interval(dt, lastMidnightPlusOffset).toDurationMillis / 60000) / SiteConfig.weekendDampingScale
-
 
       case (false, true, false) =>
         val lastMidnightMinusOffset = lastMidnight.minusMinutes(SiteConfig.weekendDampingOffset)
@@ -102,17 +100,13 @@ object TimeUtilities {
             (new Interval(dt, nextMidnightPlusOffset).toDurationMillis / 60000) / SiteConfig.weekendDampingScale
         else SiteConfig.weekendDamping
 
-
     }
-
   }
 
   def keepThisDate(lastTs: DateTime, newTs: DateTime) = {
     val damping = weekendDamping(newTs)
-    val weekday = if (damping > 0.0) rng.nextDouble() < 1.0 - weekendDamping(newTs) else true
-    newTs.isAfter(lastTs) && weekday
+    if (damping > 0.0) rng.nextDouble() < 1.0 - weekendDamping(newTs) else true
   }
-
 
   def warpOffset(ts:DateTime, offsetSeconds: Long, dampingFactor: Double): Int = {
     val s = ts.secondOfDay().get().toLong

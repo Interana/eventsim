@@ -9,7 +9,7 @@ import org.apache.commons.math3.random.RandomGenerator
  *
  */
 
-class State(val page: String, val status: String) {
+class State(val page: String, val auth: String, val status: Int, val method: String) {
   var transitions: Map[State, (Double,Double)] = scala.collection.immutable.ListMap()
 
   def maxP = if (transitions.nonEmpty) transitions.values.map(_._2).max else 0.0
@@ -19,8 +19,8 @@ class State(val page: String, val status: String) {
     if (oldMax + p > 1.0) {
       println(this.toString)
       throw new Exception(
-        "Adding a transition from " + s.page + "," + s.status +
-          " to " + page + "," + s.status + " with probability " + p +
+        "Adding a transition from " + s.page + "," + s.auth +
+          " to " + page + "," + s.auth + " with probability " + p +
           " would make the total transition probability greater than 1")
     }
     val newKey = (oldMax, oldMax + p)
@@ -39,8 +39,8 @@ class State(val page: String, val status: String) {
   }
 
   override def toString =
-    "page: "  +  page + ",  status: " + status + ", transitions: " +
+    "page: "  +  page + ",  auth: " + auth + ", transitions: " +
      transitions.foldLeft("")( (s:String, t:(State, (Double, Double))) =>
-     (if (s != "") {s + ", "} else {""}) + t._1.page + "," + t._1.status + ": " + t._2.toString)
+     (if (s != "") {s + ", "} else {""}) + t._1.page + "," + t._1.auth + ": " + t._2.toString)
 
 }

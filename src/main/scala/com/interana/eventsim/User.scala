@@ -45,12 +45,14 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
   private val EMPTY_MAP = Map()
 
   def eventString = {
-    val showUserDetails = SiteConfig.showUserWithStatus(session.currentState.status)
+    val showUserDetails = SiteConfig.showUserWithState(session.currentState.auth)
     val m = device.+(
       "ts" -> session.nextEventTimeStamp.get.getMillis,
       "userId" -> (if (showUserDetails) userId else ""),
       "sessionId" -> session.sessionId,
       "page" -> session.currentState.page,
+      "auth" -> session.currentState.auth,
+      "method" -> session.currentState.method,
       "status" -> session.currentState.status,
       "itemInSession" -> session.itemInSession
     ).++(if (showUserDetails) props else EMPTY_MAP)
