@@ -73,13 +73,12 @@ object Main extends App {
         SiteConfig.alpha * logNormalRandomValue, // alpha = expected request inter-arrival time
         SiteConfig.beta * logNormalRandomValue, // beta = expected session inter-arrival time
         startTime, // start time
-        SiteConfig.initialState, // initial session states
+        SiteConfig.initialStates, // initial session states
+        SiteConfig.authGenerator.randomThing,
         UserProperties.randomProps,
         DeviceProperties.randomProps
       ))
 
-    // val durationInSeconds = new Interval(startTime, endTime).toDuration().getStandardSeconds
-    // val fractionOfYear = durationInSeconds / Constants.SECONDS_PER_YEAR
     if (Conf.growthRate() > 0) {
       var current = startTime
       while (current.isBefore(endTime)) {
@@ -89,8 +88,9 @@ object Main extends App {
           SiteConfig.alpha * logNormalRandomValue, // alpha = expected request inter-arrival time
           SiteConfig.beta * logNormalRandomValue, // beta = expected session inter-arrival time
           current, // start time
-          SiteConfig.newUserState, // initial session states
-          UserProperties.randomProps,
+          SiteConfig.initialStates, // initial session states
+          SiteConfig.newUserAuth,
+          UserProperties.randomNewProps,
           DeviceProperties.randomProps
         )
         nUsers += 1
@@ -115,7 +115,6 @@ object Main extends App {
     System.err.println("Starting to generate events.")
     System.err.println("Damping=" + SiteConfig.damping + ", Weekend-Damping=" + SiteConfig.weekendDamping)
 
-    // TODO: Add attrition
     var clock = startTime
     var events = 1
     //val bins = scala.collection.mutable.HashMap[Long, Int]()

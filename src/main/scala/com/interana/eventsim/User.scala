@@ -10,14 +10,16 @@ import scala.util.parsing.json.JSONObject
 class User(val alpha: Double, // alpha = expected request inter-arrival time
            val beta: Double,  // beta  = expected session inter-arrival time
            val startTime: DateTime,
-           val initialSessionStates: State,
+           val initialSessionStates: scala.collection.Map[(String,String),WeightedRandomThingGenerator[State]],
+           val auth: String,
            val props: scala.collection.immutable.Map[String,Any],
            var device: scala.collection.immutable.Map[String,Any]
           ) extends Serializable with Ordered[User] {
 
   val userId = Counters.nextUserId
   var session = new Session(
-    Some(Session.pickFirstTimeStamp(startTime, alpha, beta)), alpha, beta, initialSessionStates)
+    Some(Session.pickFirstTimeStamp(startTime, alpha, beta)),
+      alpha, beta, initialSessionStates, auth, props.getOrElse("level","").asInstanceOf[String])
 
   override def compare(that: User): Int =
     (that.session.nextEventTimeStamp, this.session.nextEventTimeStamp) match {
@@ -33,7 +35,8 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
   def nextEvent(prAttrition: Double) = {
     session.incrementEvent()
     if (session.done) {
-      if (TimeUtilities.rng.nextDouble() < prAttrition) {
+      if (TimeUtilities.rng.nextDouble() < prAttrition ||
+          session.currentState.auth == SiteConfig.churnedState.getOrElse("")) {
         session.nextEventTimeStamp = None
         // TODO: mark as churned
       }

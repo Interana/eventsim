@@ -9,13 +9,23 @@ import org.apache.commons.math3.random.RandomGenerator
  *
  */
 
-class State(val page: String, val auth: String, val status: Int, val method: String) {
-  var transitions: Map[State, (Double,Double)] = scala.collection.immutable.ListMap()
+class State(val t:(String,String,Int,String,String)) {
+  val page = t._1
+  val auth = t._2
+  val status = t._3
+  val method = t._4
+  val level = t._5
+  var laterals: Map[State, (Double,Double)] = scala.collection.immutable.ListMap()
+  var upgrades: Map[State, (Double,Double)] = scala.collection.immutable.ListMap()
+  var downgrades: Map[State, (Double,Double)] = scala.collection.immutable.ListMap()
 
-  def maxP = if (transitions.nonEmpty) transitions.values.map(_._2).max else 0.0
+  private def maxP(transitions: Map[State, (Double,Double)]) =
+    if (transitions.nonEmpty) transitions.values.map(_._2).max else 0.0
 
-  def addTransition(s: State, p: Double) = {
-    val oldMax = this.maxP
+  def maxLateralsP = maxP(laterals)
+
+  private def addTransition(s: State, p: Double, t: Map[State, (Double,Double)]) = {
+    val oldMax = this.maxP(t)
     if (oldMax + p > 1.0) {
       println(this.toString)
       throw new Exception(
@@ -24,14 +34,36 @@ class State(val page: String, val auth: String, val status: Int, val method: Str
           " would make the total transition probability greater than 1")
     }
     val newKey = (oldMax, oldMax + p)
-    transitions = transitions.+(s -> newKey)
+    t.+(s -> newKey)
   }
+
+  def addLateral(s: State, p: Double) = {laterals = addTransition(s,p,laterals)}
+  def addUpgrade(s: State, p: Double) = {laterals = addTransition(s,p,upgrades)}
+  def addDowngrade(s: State, p: Double) = {laterals = addTransition(s,p,downgrades)}
 
   private def inRange(v: Double, s:(State,(Double,Double))) = v >= s._2._1 && v < s._2._2
 
   def nextState(rng: RandomGenerator): Option[State] = {
     val x = rng.nextDouble()
-    val r = transitions.find(inRange(x,_))
+    val r = laterals.find(inRange(x,_))
+    if (r.nonEmpty)
+      Some(r.get._1)
+    else
+      None
+  }
+
+  def upgrade(rng: RandomGenerator): Option[State] = {
+    val x = rng.nextDouble()
+    val r = upgrades.find(inRange(x,_))
+    if (r.nonEmpty)
+      Some(r.get._1)
+    else
+      None
+  }
+
+  def downgrade(rng: RandomGenerator): Option[State] = {
+    val x = rng.nextDouble()
+    val r = downgrades.find(inRange(x,_))
     if (r.nonEmpty)
       Some(r.get._1)
     else
@@ -40,7 +72,7 @@ class State(val page: String, val auth: String, val status: Int, val method: Str
 
   override def toString =
     "page: "  +  page + ",  auth: " + auth + ", transitions: " +
-     transitions.foldLeft("")( (s:String, t:(State, (Double, Double))) =>
+     laterals.foldLeft("")( (s:String, t:(State, (Double, Double))) =>
      (if (s != "") {s + ", "} else {""}) + t._1.page + "," + t._1.auth + ": " + t._2.toString)
 
 }

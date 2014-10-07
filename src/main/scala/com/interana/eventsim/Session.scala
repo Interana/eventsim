@@ -12,12 +12,14 @@ import org.joda.time.DateTime
 class Session(var nextEventTimeStamp: Option[DateTime],
               val alpha: Double, // alpha = expected request inter-arrival time
               val beta: Double,  // beta  = expected session inter-arrival time
-              val initialState: State) {
+              val initialStates: scala.collection.Map[(String,String),WeightedRandomThingGenerator[State]],
+              val auth: String,
+              val level: String ) {
 
   val sessionId = Counters.nextSessionId
   var itemInSession = 0
   var done = false
-  var currentState:State = initialState.nextState(rng).get
+  var currentState:State = initialStates((auth, level)).randomThing
 
   def incrementEvent() = {
 
@@ -34,7 +36,8 @@ class Session(var nextEventTimeStamp: Option[DateTime],
   }
 
   def nextSession =
-    new Session(Some(Session.pickNextSessionStartTime(nextEventTimeStamp.get, beta)), alpha, beta, initialState)
+    new Session(Some(Session.pickNextSessionStartTime(nextEventTimeStamp.get, beta)),
+      alpha, beta, initialStates, currentState.auth, currentState.level)
 
 }
 

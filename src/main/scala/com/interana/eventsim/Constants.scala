@@ -13,4 +13,6 @@ object Constants {
   val SECONDS_PER_YEAR = SECONDS_PER_DAY * 365.25
   val MILLISECONDS_PER_YEAR = SECONDS_PER_YEAR * 1000
   val DEFAULT_SESSION_GAP = 30 * 60 // 30 minutes, per IAB
+  val DEFAULT_NEW_USER_AUTH = "Guest"
+  val DEFAULT_NEW_USER_LEVEL = "Free"
 }
