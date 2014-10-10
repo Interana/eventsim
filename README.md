@@ -38,13 +38,21 @@ When you run the simulator, you specify the average values and the simulator pic
 Usage
 =====
 
-Start by installing scala. Easiest way is
+Start by installing scala. Easiest way on the Mac is
 
     $ brew install scala
+On Linux
+
+    $ git clone https://github.com/Interana/eventsim/
+    $ sudo apt-get install openjdk-7-jdk
+    $ sudo apt-get install scala
+    $ wget http://dl.bintray.com/sbt/native-packages/sbt/0.13.5/sbt-0.13.5.zip 
+    $ unzip sbt-0.13.5.zip 
+This will create the sbt directory which has the sbt/bin/sbt
 
 To build the executable, run
 
-    $ sbt assembly
+    $ sbt/bin/sbt assembly
     $ # make sure the script is executable
     $ chmod +x bin/eventsim
 
@@ -69,5 +77,17 @@ You can then run the simulator from the root directory with a command like this
 
      trailing arguments:
       output-file (not required)   File name
+
+Example for 2.5 M events:
+
+    $ bin/eventsim -c "examples/site.json" --from 365 --nusers 1000 --growth-rate 0.01 data/fake.json
+    Initial number of users: 1000, Final number of users: 1010
+    Starting to generate events.
+    Damping=0.0625, Weekend-Damping=0.5
+    Start: 2013-10-06T06:27:10, End: 2014-10-05T06:27:10, Now: 2014-10-05T06:27:07, Events:2468822
+
+Example for more events:
+
+    $ bin/eventsim -c "examples/site.json" --from 365 --nusers 30000 --growth-rate 0.30 data/fake.json
 
 If you want to edit the code, I strongly recommend IntelliJ. Ping me for details on setting this up.
