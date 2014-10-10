@@ -6,8 +6,6 @@ import org.joda.time.DateTime
 object UserProperties {
   // utilities for generating random properties for users
 
-  val randomLastNameGenerator = new RandomLastNameGenerator
-  val randomFirstNameGenerator = new RandomFirstNameGenerator
 
   def randomProps: scala.collection.immutable.Map[String,Any] = {
     val secondsSinceRegistration =
@@ -16,10 +14,10 @@ object UserProperties {
         (Constants.SECONDS_PER_YEAR * 5).toInt)
 
     val registrationTime = new DateTime().minusSeconds(secondsSinceRegistration)
-    val firstNameAndGender = randomFirstNameGenerator.randomThing
+    val firstNameAndGender = RandomFirstNameGenerator.randomThing
 
     Map[String,Any](
-      "lastName" -> randomLastNameGenerator.randomThing,
+      "lastName" -> RandomLastNameGenerator.randomThing,
       "firstName" -> firstNameAndGender._1,
       "gender" -> firstNameAndGender._2,
       "registration" -> registrationTime.getMillis(),

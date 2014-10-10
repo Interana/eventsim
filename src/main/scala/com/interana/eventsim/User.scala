@@ -40,8 +40,9 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
         session.nextEventTimeStamp = None
         // TODO: mark as churned
       }
-      else
+      else {
         session = session.nextSession
+      }
     }
   }
 
@@ -49,7 +50,7 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
 
   def eventString = {
     val showUserDetails = SiteConfig.showUserWithState(session.currentState.auth)
-    val m = device.+(
+    var m = device.+(
       "ts" -> session.nextEventTimeStamp.get.getMillis,
       "userId" -> (if (showUserDetails) userId else ""),
       "sessionId" -> session.sessionId,
@@ -58,7 +59,17 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
       "method" -> session.currentState.method,
       "status" -> session.currentState.status,
       "itemInSession" -> session.itemInSession
-    ).++(if (showUserDetails) props else EMPTY_MAP)
+    )
+
+    if (showUserDetails)
+      m ++= props
+
+    if (session.currentState.page=="NextSong")
+      m += (
+        "artist" -> session.currentSong.get._2,
+        "song" -> session.currentSong.get._3,
+        "length" -> session.currentSong.get._4
+        )
 
     val j = new JSONObject(m)
     j.toString()

@@ -7,7 +7,7 @@ import scala.io.Source
 /**
  *  Randomly generates first names
  */
-class RandomFirstNameGenerator extends WeightedRandomThingGenerator[(String,String)] {
+object RandomFirstNameGenerator extends WeightedRandomThingGenerator[(String,String)] {
 
   val s = Source.fromFile("data/yob1990.txt","ISO-8859-1")
   val lines = s.getLines()

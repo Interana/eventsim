@@ -2,6 +2,7 @@ package com.interana.eventsim
 
 import java.io.PrintWriter
 
+import com.interana.eventsim.Utilities.trackListenCount
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
 import org.rogach.scallop.{ScallopConf, ScallopOption}
@@ -49,6 +50,8 @@ object Main extends App {
     val verbose = toggle("verbose", default = Some(false), descrYes = "verbose output (not implemented yet)", descrNo = "silent mode")
     val outputFile: ScallopOption[String] = trailArg[String]("output-file", required = false, descr = "File name")
 
+    val compute = toggle("compute", default = Some(false), descrYes = "compute listen counts then stop", descrNo = "run normally")
+
   }
 
   val startTime = if (Conf.startTimeArg.isSupplied) {
@@ -59,6 +62,7 @@ object Main extends App {
   val endTime = if (Conf.endTimeArg.isSupplied) {
     new DateTime(Conf.endTimeArg())
   } else {
+    new DateTime().minusDays(Conf.to())
     new DateTime().minusDays(Conf.to())
   }
 
@@ -138,7 +142,10 @@ object Main extends App {
     System.err.println()
   }
 
-  this.doStuff
+  if (Conf.compute())
+    trackListenCount.compute
+  else
+    this.doStuff
 
 }
 

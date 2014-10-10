@@ -25,4 +25,7 @@ class WeightedRandomThingGenerator[T]  {
     if (idx >= 0) a(idx)._1 else a(-idx - 2)._1
   }
 
+  def mkString =
+    a.take(5).foldLeft("First 5 items:\n")((s:String,t:(T,Integer)) => s + "\t" + t.toString() + "\n")
+
 }

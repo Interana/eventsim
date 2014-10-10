@@ -4,6 +4,8 @@ eventsim
 Eventsim is a program designed to generate event data for testing and demos. It's written in Scala (which provides
 a good balance of scalability, brevity, and clarity).
 
+(I recommend running it with the `music_site.json` config, which will generate events for a music listening web site.)
+
 How it works
 ============
 

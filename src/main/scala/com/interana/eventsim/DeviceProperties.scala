@@ -6,13 +6,11 @@ import com.interana.eventsim.buildin.{RandomLocationGenerator, RandomUserAgentGe
  * Created by jadler on 9/16/14.
  */
 object DeviceProperties {
-  val randomLocationGenerator = new RandomLocationGenerator
-  val randomUserAgentGenerator = new RandomUserAgentGenerator
 
   def randomProps: scala.collection.immutable.Map[String,Any] = {
-    val userAgent = randomUserAgentGenerator.randomThing
+    val userAgent = RandomUserAgentGenerator.randomThing
     Map[String,Any](
-      "location" -> randomLocationGenerator.randomThing,
+      "location" -> RandomLocationGenerator.randomThing,
       "userAgent" -> userAgent._1,
       "browser" -> userAgent._2,
       "OS" -> userAgent._3
