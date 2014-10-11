@@ -11,9 +11,9 @@ object DeviceProperties {
     val userAgent = RandomUserAgentGenerator.randomThing
     Map[String,Any](
       "location" -> RandomLocationGenerator.randomThing,
-      "userAgent" -> userAgent._1,
-      "browser" -> userAgent._2,
-      "OS" -> userAgent._3
+      "userAgent" -> userAgent._1 //,
+      //"browser" -> userAgent._2,
+      //"OS" -> userAgent._3
     )
   }
 }
