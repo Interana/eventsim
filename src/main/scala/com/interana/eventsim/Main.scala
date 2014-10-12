@@ -44,6 +44,10 @@ object Main extends App {
     val to: ScallopOption[Int] =
       opt[Int]("to", descr = "to y days ago", required=false,default=Option(1))
 
+    val firstUserId: ScallopOption[Int] =
+      opt[Int]("userid", descr = "first user id", required=false,default=Option(1))
+
+
     val configFile: ScallopOption[String] =
       opt[String]("config", descr = "config file", required=true)
 
