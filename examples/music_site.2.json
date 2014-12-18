@@ -1,6 +1,6 @@
 {"seed" : 1,
  "alpha" : 90.0,
- "beta" : 86400.0,
+ "beta" : 604800.0,
  "damping" : 0.09375,
  "weekend-damping" : 0.5,
  "weekend-damping-offset" : 180,

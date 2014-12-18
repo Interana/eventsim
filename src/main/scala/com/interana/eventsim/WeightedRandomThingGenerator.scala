@@ -1,15 +1,21 @@
 package com.interana.eventsim
 
+import scala.collection.mutable.ArrayBuffer
+
 /**
  * Created by jadler on 9/2/14.
  * Class to randomly return a weighted thing from a list of things
  */
 class WeightedRandomThingGenerator[T]  {
+  var ab = new ArrayBuffer[(T, Integer)](0)
   var a = new Array[(T, Integer)](0)
+  var ready = false
   var totalWeight: Integer = 0
 
   def add(t: (T, Integer)): Unit = {
-    a = a :+ (t._1, totalWeight)
+    if (ready)
+      throw new RuntimeException("called WeightedRandomThingGenerator.add after use")
+    ab += ((t._1, totalWeight))
     totalWeight = totalWeight + t._2
   }
 
@@ -20,6 +26,10 @@ class WeightedRandomThingGenerator[T]  {
   }
 
   def randomThing: T = {
+    if (!ready) {
+      a = ab.toArray
+      ready = true
+    }
     val key: (T, Integer) = (null, TimeUtilities.rng.nextInt(totalWeight)).asInstanceOf[(T,Integer)]
     val idx = java.util.Arrays.binarySearch(a, key, tupleSecondValueOrdering)
     if (idx >= 0) a(idx)._1 else a(-idx - 2)._1

@@ -41,13 +41,15 @@ Usage
 Start by installing scala. Easiest way on the Mac is
 
     $ brew install scala
+
 On Linux
 
     $ git clone https://github.com/Interana/eventsim/
     $ sudo apt-get install openjdk-7-jdk
     $ sudo apt-get install scala
     $ wget http://dl.bintray.com/sbt/native-packages/sbt/0.13.5/sbt-0.13.5.zip 
-    $ unzip sbt-0.13.5.zip 
+    $ unzip sbt-0.13.5.zip
+
 This will create the sbt directory which has the sbt/bin/sbt
 
 To build the executable, run
@@ -55,6 +57,10 @@ To build the executable, run
     $ sbt/bin/sbt assembly
     $ # make sure the script is executable
     $ chmod +x bin/eventsim
+
+
+The `bin/eventsim` script assumes a recent version of Java 8. You may have to modify it (drop the
+string optimization options) for earlier versions.
 
 You can then run the simulator from the root directory with a command like this
 

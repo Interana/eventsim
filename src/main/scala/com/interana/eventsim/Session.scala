@@ -22,7 +22,7 @@ class Session(var nextEventTimeStamp: Option[DateTime],
   var done = false
   var currentState:State = initialStates((auth, level)).randomThing
   var currentSong:Option[(String,String,String,Double)] =
-    if (currentState.page=="NextSong") Some(RandomSongGenerator.randomThing) else None
+    if (currentState.page=="NextSong") Some(RandomSongGenerator.nextSong()) else None
   var currentSongEnd:Option[DateTime] =
     if (currentState.page=="NextSong") Some(nextEventTimeStamp.get.plusSeconds(currentSong.get._4.toInt)) else None
 
@@ -41,12 +41,14 @@ class Session(var nextEventTimeStamp: Option[DateTime],
       case x if x.get.page=="NextSong" => {
         if (currentSong.isEmpty) {
           nextEventTimeStamp=Some(nextEventTimeStamp.get.plusSeconds(exponentialRandomValue(alpha).toInt))
+          currentSong = Some(RandomSongGenerator.nextSong())
         } else if (nextEventTimeStamp.get.isBefore(currentSongEnd.get)) {
           nextEventTimeStamp = currentSongEnd
+          currentSong = Some(RandomSongGenerator.nextSong(currentSong.get._1))
         } else {
           nextEventTimeStamp=Some(nextEventTimeStamp.get.plusSeconds(exponentialRandomValue(alpha).toInt))
+          currentSong = Some(RandomSongGenerator.nextSong(currentSong.get._1))
         }
-        currentSong = Some(RandomSongGenerator.randomThing)
         currentSongEnd = Some(nextEventTimeStamp.get.plusSeconds(currentSong.get._4.toInt))
         currentState = nextState.get
         itemInSession += 1

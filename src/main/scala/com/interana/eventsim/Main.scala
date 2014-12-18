@@ -114,11 +114,14 @@ object Main extends App {
 
     val startTimeString = startTime.toString(ISODateTimeFormat.dateHourMinuteSecond())
     val endTimeString = endTime.toString(ISODateTimeFormat.dateHourMinuteSecond())
+
     def showProgress(n: DateTime, users: Int, e: Int): Unit = {
-      var message = "Start: " + startTimeString + ", End: " + endTimeString +
-        ", Now: " + n.toString(ISODateTimeFormat.dateHourMinuteSecond()) + ", Events:" + e
-      System.err.write("\r".getBytes)
-      System.err.write(message.getBytes)
+      if ((e % 10000) == 0) {
+        var message = "Start: " + startTimeString + ", End: " + endTimeString +
+          ", Now: " + n.toString(ISODateTimeFormat.dateHourMinuteSecond()) + ", Events:" + e
+        System.err.write("\r".getBytes)
+        System.err.write(message.getBytes)
+      }
     }
     System.err.println("Starting to generate events.")
     System.err.println("Damping=" + SiteConfig.damping + ", Weekend-Damping=" + SiteConfig.weekendDamping)
