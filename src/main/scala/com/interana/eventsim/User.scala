@@ -1,7 +1,8 @@
 package com.interana.eventsim
 
-import java.io.Serializable
+import java.io.{OutputStream, Serializable}
 
+import com.fasterxml.jackson.core.{JsonEncoding, JsonFactory, JsonGenerator}
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
 
@@ -13,7 +14,8 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
            val initialSessionStates: scala.collection.Map[(String,String),WeightedRandomThingGenerator[State]],
            val auth: String,
            val props: scala.collection.immutable.Map[String,Any],
-           var device: scala.collection.immutable.Map[String,Any]
+           var device: scala.collection.immutable.Map[String,Any],
+           val stream: OutputStream
           ) extends Serializable with Ordered[User] {
 
   val userId = Counters.nextUserId
@@ -75,6 +77,30 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
     j.toString()
   }
 
+
+  var writer: JsonGenerator = User.jsonFactory.createGenerator(stream, JsonEncoding.UTF8)
+
+  def writeEvent = {
+    val showUserDetails = SiteConfig.showUserWithState(session.currentState.auth)
+    writer.writeStartObject()
+    writer.writeNumberField("ts", session.nextEventTimeStamp.get.getMillis)
+    writer.writeStringField("userId", (if (showUserDetails) userId.toString() else ""))
+    writer.writeNumberField("sessionId", session.sessionId)
+    writer.writeStringField("page", session.currentState.page)
+    writer.writeStringField("auth", session.currentState.auth)
+    writer.writeStringField("method", session.currentState.method)
+    writer.writeNumberField("status", session.currentState.status)
+    writer.writeNumberField("itemInSession", session.itemInSession)
+    if (showUserDetails)
+      props.foreach((p:(String, Any)) => writer.writeObjectField(p._1, p._2) )
+    if (session.currentState.page=="NextSong") {
+      writer.writeStringField("artist", session.currentSong.get._2)
+      writer.writeStringField("song",  session.currentSong.get._3)
+      writer.writeNumberField("length", session.currentSong.get._4)
+    }
+    writer.writeEndObject()
+  }
+
   def tsToString(ts: DateTime): String = {
       ts.toString(ISODateTimeFormat.dateTime())
   }
@@ -91,4 +117,9 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
     "userId" -> userId ,
     "currentState" -> session.currentState)
 
+}
+
+object User {
+  protected val jsonFactory = new JsonFactory()
+  jsonFactory.setRootValueSeparator("\n")
 }

@@ -1,6 +1,6 @@
 package com.interana.eventsim
 
-import java.io.PrintWriter
+import java.io.FileOutputStream
 
 import com.interana.eventsim.Utilities.trackListenCount
 import org.joda.time.DateTime
@@ -76,6 +76,14 @@ object Main extends App {
 
   def doStuff = {
 
+
+    val out = if (Conf.outputFile.isSupplied) {
+      new FileOutputStream(Conf.outputFile())
+      //new PrintWriter(Conf.outputFile())
+    } else {
+      System.out
+    }
+
     (0 until nUsers).foreach((_) =>
       users += new User(
         SiteConfig.alpha * logNormalRandomValue, // alpha = expected request inter-arrival time
@@ -84,7 +92,8 @@ object Main extends App {
         SiteConfig.initialStates, // initial session states
         SiteConfig.authGenerator.randomThing,
         UserProperties.randomProps,
-        DeviceProperties.randomProps
+        DeviceProperties.randomProps,
+        out
       ))
 
     if (Conf.growthRate() > 0) {
@@ -99,24 +108,22 @@ object Main extends App {
           SiteConfig.initialStates, // initial session states
           SiteConfig.newUserAuth,
           UserProperties.randomNewProps,
-          DeviceProperties.randomProps
+          DeviceProperties.randomProps,
+          out
         )
         nUsers += 1
       }
     }
     System.err.println("Initial number of users: " + Conf.nUsers() + ", Final number of users: " + nUsers)
 
-    val out = if (Conf.outputFile.isSupplied) {
-      new PrintWriter(Conf.outputFile())
-    } else {
-      new PrintWriter(System.out)
-    }
+
 
     val startTimeString = startTime.toString(ISODateTimeFormat.dateHourMinuteSecond())
     val endTimeString = endTime.toString(ISODateTimeFormat.dateHourMinuteSecond())
-
+    // val actualStartTime = new DateTime()
     def showProgress(n: DateTime, users: Int, e: Int): Unit = {
       if ((e % 10000) == 0) {
+        // val elapsed = new Interval(actualStartTime, new DateTime())
         var message = "Start: " + startTimeString + ", End: " + endTimeString +
           ", Now: " + n.toString(ISODateTimeFormat.dateHourMinuteSecond()) + ", Events:" + e
         System.err.write("\r".getBytes)
@@ -129,6 +136,7 @@ object Main extends App {
     var clock = startTime
     var events = 1
     //val bins = scala.collection.mutable.HashMap[Long, Int]()
+
     while (clock.isBefore(endTime)) {
       //val bin = (clock.getMillis / 3600000L) * 3600L
       //if (clock.isAfter(startTime)) bins.put(bin, if (bins.contains(bin)) bins(bin) + 1 else 1)
@@ -138,7 +146,8 @@ object Main extends App {
       val prAttrition = nUsers * Conf.attritionRate() * (endTime.getMillis - startTime.getMillis / Constants.SECONDS_PER_YEAR)
       clock = u.session.nextEventTimeStamp.get
 
-      if (clock.isAfter(startTime)) out.println(u.eventString)
+      //if (clock.isAfter(startTime)) out.println(u.eventString)
+      if (clock.isAfter(startTime)) u.writeEvent
       u.nextEvent(prAttrition)
       users += u
       events += 1
