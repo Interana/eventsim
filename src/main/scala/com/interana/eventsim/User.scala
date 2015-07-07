@@ -78,7 +78,7 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
   }
 
 
-  var writer: JsonGenerator = User.jsonFactory.createGenerator(stream, JsonEncoding.UTF8)
+  val writer: JsonGenerator = User.jsonFactory.createGenerator(stream, JsonEncoding.UTF8)
 
   def writeEvent = {
     val showUserDetails = SiteConfig.showUserWithState(session.currentState.auth)
@@ -91,14 +91,27 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
     writer.writeStringField("method", session.currentState.method)
     writer.writeNumberField("status", session.currentState.status)
     writer.writeNumberField("itemInSession", session.itemInSession)
-    if (showUserDetails)
-      props.foreach((p:(String, Any)) => writer.writeObjectField(p._1, p._2) )
+    if (showUserDetails) {
+      props.foreach((p: (String, Any)) => {
+        //writer.writeObjectField(p._1, p._2)
+        p._2 match {
+          case _: Long => writer.writeNumberField(p._1, p._2.asInstanceOf[Long])
+          case _: Int => writer.writeNumberField(p._1, p._2.asInstanceOf[Int])
+          case _: Double => writer.writeNumberField(p._1, p._2.asInstanceOf[Double])
+          case _: Float => writer.writeNumberField(p._1, p._2.asInstanceOf[Float])
+          case _: String => writer.writeStringField(p._1, p._2.asInstanceOf[String])
+        }})
+      if (Main.Conf.tag.isSupplied)
+        writer.writeStringField("tag", Main.Conf.tag.get.get)
+    }
     if (session.currentState.page=="NextSong") {
       writer.writeStringField("artist", session.currentSong.get._2)
       writer.writeStringField("song",  session.currentSong.get._3)
       writer.writeNumberField("length", session.currentSong.get._4)
     }
     writer.writeEndObject()
+    writer.writeRaw('\n')
+    writer.flush()
   }
 
   def tsToString(ts: DateTime): String = {
@@ -121,5 +134,5 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
 
 object User {
   protected val jsonFactory = new JsonFactory()
-  jsonFactory.setRootValueSeparator("\n")
+  jsonFactory.setRootValueSeparator("")
 }

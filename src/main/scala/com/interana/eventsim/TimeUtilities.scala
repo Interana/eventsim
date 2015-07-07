@@ -20,7 +20,7 @@ object TimeUtilities {
 
   def isWeekendOrHoliday(ld: LocalDate) = isWeekend(ld) || isHoliday(ld)
 
-  val rng: RandomGenerator = new MersenneTwister(SiteConfig.seed)
+  val rng: RandomGenerator = new MersenneTwister(Main.seed)
   // If X has a standard uniform distribution, then by the inverse transform sampling method,
   // Y = − (1/λ) ln(X) has an exponential distribution with (rate) parameter λ
   // mu = (1 / lambda)

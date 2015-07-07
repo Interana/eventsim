@@ -39,17 +39,22 @@ object Main extends App {
       )
 
     val from: ScallopOption[Int] =
-      opt[Int]("from", descr = "from x days ago", required=false,default=Option(15))
+      opt[Int]("from", descr = "from x days ago", required = false, default = Option(15))
 
     val to: ScallopOption[Int] =
-      opt[Int]("to", descr = "to y days ago", required=false,default=Option(1))
+      opt[Int]("to", descr = "to y days ago", required = false, default = Option(1))
 
     val firstUserId: ScallopOption[Int] =
-      opt[Int]("userid", descr = "first user id", required=false,default=Option(1))
+      opt[Int]("userid", descr = "first user id", required = false, default = Option(1))
 
+    val randomSeed: ScallopOption[Int] =
+      opt[Int]("randomseed", descr = "random seed", required = false)
 
     val configFile: ScallopOption[String] =
-      opt[String]("config", descr = "config file", required=true)
+      opt[String]("config", descr = "config file", required = true)
+
+    val tag: ScallopOption[String] =
+      opt[String]("tag", descr = "tag applied to each line", required = false)
 
     val verbose = toggle("verbose", default = Some(false), descrYes = "verbose output (not implemented yet)", descrNo = "silent mode")
     val outputFile: ScallopOption[String] = trailArg[String]("output-file", required = false, descr = "File name")
@@ -63,6 +68,7 @@ object Main extends App {
   } else {
     new DateTime().minusDays(Conf.from())
   }
+
   val endTime = if (Conf.endTimeArg.isSupplied) {
     new DateTime(Conf.endTimeArg())
   } else {
@@ -74,8 +80,13 @@ object Main extends App {
 
   var nUsers = Conf.nUsers()
 
-  def doStuff = {
+  var seed = if (Conf.randomSeed.isSupplied) {
+    Conf.randomSeed.get.get.toLong
+  } else {
+    SiteConfig.seed
+  }
 
+  def doStuff = {
 
     val out = if (Conf.outputFile.isSupplied) {
       new FileOutputStream(Conf.outputFile())
@@ -120,12 +131,16 @@ object Main extends App {
 
     val startTimeString = startTime.toString(ISODateTimeFormat.dateHourMinuteSecond())
     val endTimeString = endTime.toString(ISODateTimeFormat.dateHourMinuteSecond())
-    // val actualStartTime = new DateTime()
+
+    var lastTimeStamp = System.currentTimeMillis()
     def showProgress(n: DateTime, users: Int, e: Int): Unit = {
       if ((e % 10000) == 0) {
         // val elapsed = new Interval(actualStartTime, new DateTime())
+        val now = System.currentTimeMillis()
+        val rate = 10000000 / (now - lastTimeStamp)
+        lastTimeStamp = now
         var message = "Start: " + startTimeString + ", End: " + endTimeString +
-          ", Now: " + n.toString(ISODateTimeFormat.dateHourMinuteSecond()) + ", Events:" + e
+          ", Now: " + n.toString(ISODateTimeFormat.dateHourMinuteSecond()) + ", Events:" + e + ", Rate: " + rate + " eps"
         System.err.write("\r".getBytes)
         System.err.write(message.getBytes)
       }
@@ -156,6 +171,10 @@ object Main extends App {
 
     //bins.foreach((p: (Long, Int)) => println(p._1 + "," + p._2))
     System.err.println()
+
+    out.flush()
+    out.close()
+
   }
 
   if (Conf.compute())
