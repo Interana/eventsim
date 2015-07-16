@@ -11,3 +11,5 @@ libraryDependencies += "de.jollyday" % "jollyday" % "0.4.7"
 libraryDependencies += "org.rogach" %% "scallop" % "0.9.5"
 
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-core" % "2.4.4"
+
+libraryDependencies += "org.apache.kafka" % "kafka_2.10" % "0.8.2.1"

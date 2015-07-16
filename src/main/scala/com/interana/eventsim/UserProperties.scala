@@ -7,7 +7,7 @@ object UserProperties {
   // utilities for generating random properties for users
 
 
-  def randomProps: scala.collection.immutable.Map[String,Any] = {
+  def randomProps: Map[String, Any] = {
     val secondsSinceRegistration =
       Math.min(
         TimeUtilities.exponentialRandomValue(Main.Conf.growthRate.get.getOrElse(0.2)*Constants.SECONDS_PER_YEAR).toInt,
@@ -15,19 +15,21 @@ object UserProperties {
 
     val registrationTime = new DateTime().minusSeconds(secondsSinceRegistration)
     val firstNameAndGender = RandomFirstNameGenerator.randomThing
+    val location = RandomLocationGenerator.randomThing
 
     Map[String,Any](
       "lastName" -> RandomLastNameGenerator.randomThing,
       "firstName" -> firstNameAndGender._1,
       "gender" -> firstNameAndGender._2,
       "registration" -> registrationTime.getMillis(),
-      "level" -> SiteConfig.levelGenerator.randomThing
+      // "level" -> SiteConfig.levelGenerator.randomThing,
+      "location" -> location
     )
   }
 
-  def randomNewProps = {
+  def randomNewProps(dt: DateTime) = {
     val p = randomProps
-    p + ("level" -> SiteConfig.newUserLevel)
+     p + ("registration" -> dt.getMillis())
   }
 
 

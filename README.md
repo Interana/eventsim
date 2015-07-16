@@ -45,16 +45,13 @@ Start by installing scala. Easiest way on the Mac is
 On Linux
 
     $ git clone https://github.com/Interana/eventsim/
-    $ sudo apt-get install openjdk-7-jdk
-    $ sudo apt-get install scala
-    $ wget http://dl.bintray.com/sbt/native-packages/sbt/0.13.5/sbt-0.13.5.zip 
-    $ unzip sbt-0.13.5.zip
-
-This will create the sbt directory which has the sbt/bin/sbt
+    $ echo "deb http://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
+    $ sudo apt-get update
+    $ sudo apt-get install openjdk-7-jdk scala sbt
 
 To build the executable, run
 
-    $ sbt/bin/sbt assembly
+    $ sbt assembly
     $ # make sure the script is executable
     $ chmod +x bin/eventsim
 

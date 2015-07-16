@@ -13,15 +13,16 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
            val startTime: DateTime,
            val initialSessionStates: scala.collection.Map[(String,String),WeightedRandomThingGenerator[State]],
            val auth: String,
-           val props: scala.collection.immutable.Map[String,Any],
+           val props: Map[String,Any],
            var device: scala.collection.immutable.Map[String,Any],
+           val initialLevel: String,
            val stream: OutputStream
           ) extends Serializable with Ordered[User] {
 
   val userId = Counters.nextUserId
   var session = new Session(
     Some(Session.pickFirstTimeStamp(startTime, alpha, beta)),
-      alpha, beta, initialSessionStates, auth, props.getOrElse("level","").asInstanceOf[String])
+      alpha, beta, initialSessionStates, auth, initialLevel)
 
   override def compare(that: User): Int =
     (that.session.nextEventTimeStamp, this.session.nextEventTimeStamp) match {
@@ -90,6 +91,7 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
     writer.writeStringField("auth", session.currentState.auth)
     writer.writeStringField("method", session.currentState.method)
     writer.writeNumberField("status", session.currentState.status)
+    writer.writeStringField("level", session.currentState.level)
     writer.writeNumberField("itemInSession", session.itemInSession)
     if (showUserDetails) {
       props.foreach((p: (String, Any)) => {

@@ -1,10 +1,12 @@
 package com.interana.eventsim
 
 import java.io.FileOutputStream
+import java.util.Properties
 
 import com.interana.eventsim.Utilities.trackListenCount
+import kafka.producer.{Producer, ProducerConfig}
 import org.joda.time.DateTime
-import org.joda.time.format.ISODateTimeFormat
+import org.joda.time.format.{DateTimeFormat, ISODateTimeFormat}
 import org.rogach.scallop.{ScallopConf, ScallopOption}
 
 import scala.collection.mutable
@@ -59,7 +61,15 @@ object Main extends App {
     val verbose = toggle("verbose", default = Some(false), descrYes = "verbose output (not implemented yet)", descrNo = "silent mode")
     val outputFile: ScallopOption[String] = trailArg[String]("output-file", required = false, descr = "File name")
 
+    val kafkaTopic: ScallopOption[String] =
+      opt[String]("kafkaTopic", descr = "kafka topic", required = false)
+
+    val kafkaBrokerList: ScallopOption[String] =
+      opt[String]("kafkaBrokerList", descr = "kafka broker list", required = false)
+
     val compute = toggle("compute", default = Some(false), descrYes = "compute listen counts then stop", descrNo = "run normally")
+
+    val realTime = toggle("continuous", default = Some(false), descrYes = "continuous output", descrNo = "run all at once")
 
   }
 
@@ -86,9 +96,20 @@ object Main extends App {
     SiteConfig.seed
   }
 
+  val kafkaProducer = if (Conf.kafkaBrokerList.isDefined) {
+    val kafkaProperties = new Properties()
+    kafkaProperties.setProperty("metadata.broker.list", Conf.kafkaBrokerList.get.get)
+    val producerConfig = new ProducerConfig(kafkaProperties)
+    new Some(new Producer[Array[Byte],Array[Byte]](producerConfig))
+  } else None
+
+  val realTime = Conf.realTime.get.get
+
   def doStuff = {
 
-    val out = if (Conf.outputFile.isSupplied) {
+    val out = if (kafkaProducer.nonEmpty) {
+      new KafkaOutputStream(kafkaProducer.get, Conf.kafkaTopic.get.get)
+    } else if (Conf.outputFile.isSupplied) {
       new FileOutputStream(Conf.outputFile())
       //new PrintWriter(Conf.outputFile())
     } else {
@@ -104,6 +125,7 @@ object Main extends App {
         SiteConfig.authGenerator.randomThing,
         UserProperties.randomProps,
         DeviceProperties.randomProps,
+        SiteConfig.levelGenerator.randomThing,
         out
       ))
 
@@ -118,8 +140,9 @@ object Main extends App {
           current, // start time
           SiteConfig.initialStates, // initial session states
           SiteConfig.newUserAuth,
-          UserProperties.randomNewProps,
+          UserProperties.randomNewProps(current),
           DeviceProperties.randomProps,
+          SiteConfig.newUserLevel,
           out
         )
         nUsers += 1
@@ -129,8 +152,9 @@ object Main extends App {
 
 
 
-    val startTimeString = startTime.toString(ISODateTimeFormat.dateHourMinuteSecond())
-    val endTimeString = endTime.toString(ISODateTimeFormat.dateHourMinuteSecond())
+    val startTimeString = startTime.toString(DateTimeFormat.shortDateTime())
+    val endTimeString = endTime.toString(DateTimeFormat.shortDateTime())
+    System.err.println("Start: " + startTimeString + ", End: " + endTimeString)
 
     var lastTimeStamp = System.currentTimeMillis()
     def showProgress(n: DateTime, users: Int, e: Int): Unit = {
@@ -139,8 +163,8 @@ object Main extends App {
         val now = System.currentTimeMillis()
         val rate = 10000000 / (now - lastTimeStamp)
         lastTimeStamp = now
-        var message = "Start: " + startTimeString + ", End: " + endTimeString +
-          ", Now: " + n.toString(ISODateTimeFormat.dateHourMinuteSecond()) + ", Events:" + e + ", Rate: " + rate + " eps"
+        val message = // "Start: " + startTimeString + ", End: " + endTimeString + ", " +
+          "Now: " + n.toString(DateTimeFormat.shortDateTime()) + ", Events:" + e + ", Rate: " + rate + " eps"
         System.err.write("\r".getBytes)
         System.err.write(message.getBytes)
       }
@@ -155,6 +179,13 @@ object Main extends App {
     while (clock.isBefore(endTime)) {
       //val bin = (clock.getMillis / 3600000L) * 3600L
       //if (clock.isAfter(startTime)) bins.put(bin, if (bins.contains(bin)) bins(bin) + 1 else 1)
+
+      if (realTime) {
+        val now = new DateTime()
+        val dif = clock.getMillis - now.getMillis
+        if (dif > 0)
+          Thread.sleep(dif / 1000)
+      }
 
       showProgress(clock, users.length, events)
       val u = users.dequeue()
