@@ -1,4 +1,6 @@
-package com.interana.eventsim
+package com.interana.eventsim.config
+
+import com.interana.eventsim.{Constants, State, WeightedRandomThingGenerator}
 
 import scala.collection.mutable
 import scala.io.Source
@@ -34,6 +36,8 @@ object ConfigFromFile {
   var endDate:Option[String] = None
   var nUsers:Option[Int] = None
   var firstUserId:Option[Int] = None
+  var growthRate:Option[Double] = None
+  var tag:Option[String] = None
 
   // tags for JSON config file
   val TRANSITIONS = "transitions"
@@ -68,6 +72,8 @@ object ConfigFromFile {
   val END_DATE = "end-date"
   val N_USERS = "n-users"
   val FIRST_USER_ID = "first-user-id"
+  val GROWTH_RATE = "growth-rate"
+  val TAG = "tag"
 
   def configFileLoader(fn: String) = {
 
@@ -150,6 +156,16 @@ object ConfigFromFile {
 
     jsonContents.get(FIRST_USER_ID) match {
       case x: Some[Any] => firstUserId = Some(x.get.asInstanceOf[Double].toInt)
+      case None =>
+    }
+
+    jsonContents.get(GROWTH_RATE) match {
+      case x: Some[Any] => growthRate = Some(x.get.asInstanceOf[Double])
+      case None =>
+    }
+
+    jsonContents.get(TAG) match {
+      case x: Some[Any] => tag = Some(x.get.asInstanceOf[String])
       case None =>
     }
 

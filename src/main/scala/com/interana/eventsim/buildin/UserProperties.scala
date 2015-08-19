@@ -10,7 +10,7 @@ object UserProperties {
   def randomProps = {
     val secondsSinceRegistration =
       Math.min(
-        TimeUtilities.exponentialRandomValue(Main.ConfFromOptions.growthRate.get.getOrElse(0.2)*Constants.SECONDS_PER_YEAR).toInt,
+        TimeUtilities.exponentialRandomValue(Main.growthRate.getOrElse(0.0)*Constants.SECONDS_PER_YEAR).toInt,
         (Constants.SECONDS_PER_YEAR * 5).toInt)
 
     val registrationTime = Main.startTime.minusSeconds(secondsSinceRegistration)

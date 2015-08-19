@@ -4,6 +4,7 @@ import java.time.LocalDateTime
 
 import com.interana.eventsim.TimeUtilities._
 import com.interana.eventsim.buildin.RandomSongGenerator
+import com.interana.eventsim.config.ConfigFromFile
 
 /**
  * Created by jadler on 9/4/14.

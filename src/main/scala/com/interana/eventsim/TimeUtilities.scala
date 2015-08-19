@@ -4,6 +4,7 @@ import java.time.temporal.{ChronoField, ChronoUnit}
 import java.time.{DayOfWeek, Duration, LocalDateTime, LocalDate}
 
 import com.interana.eventsim.Constants._
+import com.interana.eventsim.config.ConfigFromFile
 import de.jollyday.HolidayManager
 import org.apache.commons.math3.random.MersenneTwister
 

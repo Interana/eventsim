@@ -2,13 +2,14 @@ package com.interana.eventsim
 
 import java.io.FileOutputStream
 import java.time.temporal.ChronoUnit
-import java.time.{ZoneOffset, Duration, LocalDateTime}
+import java.time.{Duration, LocalDateTime, ZoneOffset}
 import java.util.Properties
 
 import com.interana.eventsim.Utilities.{SimilarSongParser, TrackListenCount}
 import com.interana.eventsim.buildin.{DeviceProperties, UserProperties}
+import com.interana.eventsim.config.ConfigFromFile
 import kafka.producer.{Producer, ProducerConfig}
-import org.rogach.scallop.{ScallopConf, ScallopOption}
+import org.rogach.scallop.{ScallopOption, ScallopConf}
 
 import scala.collection.mutable
 
@@ -99,11 +100,21 @@ object Main extends App {
 
   var nUsers = ConfigFromFile.nUsers.getOrElse(ConfFromOptions.nUsers())
 
-  val seed = if (ConfFromOptions.randomSeed.isSupplied) {
+  val seed = if (ConfFromOptions.randomSeed.isSupplied)
     ConfFromOptions.randomSeed.get.get.toLong
-  } else {
+   else
     ConfigFromFile.seed
-  }
+
+
+  val tag = if (ConfFromOptions.tag.isSupplied)
+    ConfFromOptions.tag.get
+  else
+    ConfigFromFile.tag
+
+  val growthRate = if (ConfFromOptions.growthRate.isSupplied)
+    ConfFromOptions.growthRate.get
+  else
+    ConfigFromFile.growthRate
 
   val kafkaProducer = if (ConfFromOptions.kafkaBrokerList.isDefined) {
     val kafkaProperties = new Properties()
@@ -137,10 +148,11 @@ object Main extends App {
         out
       ))
 
-    if (ConfFromOptions.growthRate() > 0) {
+    val growthRate = ConfigFromFile.growthRate.getOrElse(ConfFromOptions.growthRate.get.get)
+    if (growthRate > 0) {
       var current = startTime
       while (current.isBefore(endTime)) {
-        val mu = Constants.SECONDS_PER_YEAR / (nUsers * ConfFromOptions.growthRate())
+        val mu = Constants.SECONDS_PER_YEAR / (nUsers * growthRate)
         current = current.plusSeconds(TimeUtilities.exponentialRandomValue(mu).toInt)
         users += new User(
           ConfigFromFile.alpha * logNormalRandomValue,

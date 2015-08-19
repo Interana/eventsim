@@ -4,6 +4,7 @@ import java.io.{OutputStream, Serializable}
 import java.time.{ZoneOffset, LocalDateTime}
 
 import com.fasterxml.jackson.core.{JsonEncoding, JsonFactory}
+import com.interana.eventsim.config.ConfigFromFile
 
 import scala.util.parsing.json.JSONObject
 
@@ -107,8 +108,8 @@ class User(val alpha: Double,
           case _: Float => writer.writeNumberField(p._1, p._2.asInstanceOf[Float])
           case _: String => writer.writeStringField(p._1, p._2.asInstanceOf[String])
         }})
-      if (Main.ConfFromOptions.tag.isSupplied)
-        writer.writeStringField("tag", Main.ConfFromOptions.tag.get.get)
+      if (Main.tag.isDefined)
+        writer.writeStringField("tag", Main.tag.get)
     }
     if (session.currentState.page=="NextSong") {
       writer.writeStringField("artist", session.currentSong.get._2)

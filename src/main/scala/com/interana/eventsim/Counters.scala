@@ -1,5 +1,7 @@
 package com.interana.eventsim
 
+import com.interana.eventsim.config.ConfigFromFile
+
 object Counters {
   // some global counters
   private var sessionId = 0L
