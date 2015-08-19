@@ -1,13 +1,13 @@
 package com.interana.eventsim
 
 import java.io.FileOutputStream
+import java.time.temporal.ChronoUnit
+import java.time.{ZoneOffset, Duration, LocalDateTime}
 import java.util.Properties
 
-import com.interana.eventsim.Utilities.trackListenCount
-import com.interana.eventsim.buildin.{UserProperties, DeviceProperties}
+import com.interana.eventsim.Utilities.{SimilarSongParser, TrackListenCount}
+import com.interana.eventsim.buildin.{DeviceProperties, UserProperties}
 import kafka.producer.{Producer, ProducerConfig}
-import org.joda.time.DateTime
-import org.joda.time.format.{DateTimeFormat, ISODateTimeFormat}
 import org.rogach.scallop.{ScallopConf, ScallopOption}
 
 import scala.collection.mutable
@@ -34,11 +34,11 @@ object Main extends App {
 
     val startTimeArg: ScallopOption[String] =
       opt[String]("start-time", descr = "start time for data",
-        required = false, default = Option(new DateTime().minusDays(14).toString(ISODateTimeFormat.dateTime())))
+        required = false, default = Option(LocalDateTime.now().minus(14, ChronoUnit.DAYS).toString))
 
     val endTimeArg: ScallopOption[String] =
       opt[String]("end-time", descr = "end time for data",
-        required = false, default = Option(new DateTime().minusDays(7).toString(ISODateTimeFormat.dateTime())))
+        required = false, default = Option(LocalDateTime.now().minus(7, ChronoUnit.DAYS).toString))
 
     val from: ScallopOption[Int] =
       opt[Int]("from", descr = "from x days ago", required = false, default = Option(15))
@@ -56,7 +56,7 @@ object Main extends App {
       opt[String]("config", descr = "config file", required = true)
 
     val tag: ScallopOption[String] =
-      opt[String]("tag", descr = "tag applied to each line", required = false)
+      opt[String]("tag", descr = "tag applied to each line (for example, A/B test group)", required = false)
 
     val verbose = toggle("verbose", default = Some(false),
       descrYes = "verbose output (not implemented yet)", descrNo = "silent mode")
@@ -68,8 +68,11 @@ object Main extends App {
     val kafkaBrokerList: ScallopOption[String] =
       opt[String]("kafkaBrokerList", descr = "kafka broker list", required = false)
 
-    val compute = toggle("compute", default = Some(false),
-      descrYes = "create listen counts file then stop", descrNo = "run normally")
+    val generateCounts = toggle("generate-counts", default = Some(false),
+      descrYes = "generate listen counts file then stop", descrNo = "run normally")
+
+    val generateSimilarSongs = toggle("generate-similars", default = Some(false),
+      descrYes = "generate similar song file then stop", descrNo = "run normally")
 
     val realTime = toggle("continuous", default = Some(false),
       descrYes = "continuous output", descrNo = "run all at once")
@@ -77,19 +80,19 @@ object Main extends App {
   }
 
   val startTime = if (ConfFromOptions.startTimeArg.isSupplied) {
-    new DateTime(ConfFromOptions.startTimeArg())
+    LocalDateTime.parse(ConfFromOptions.startTimeArg())
   } else if (ConfigFromFile.startDate.nonEmpty) {
-    new DateTime(ConfigFromFile.startDate.get)
+    LocalDateTime.parse(ConfigFromFile.startDate.get)
   } else {
-    new DateTime().minusDays(ConfFromOptions.from())
+    LocalDateTime.now().minus(ConfFromOptions.from(), ChronoUnit.DAYS)
   }
 
   val endTime = if (ConfFromOptions.endTimeArg.isSupplied) {
-    new DateTime(ConfFromOptions.endTimeArg())
+    LocalDateTime.parse(ConfFromOptions.endTimeArg())
   } else if (ConfigFromFile.endDate.nonEmpty) {
-    new DateTime(ConfigFromFile.endDate.get)
+    LocalDateTime.parse(ConfigFromFile.endDate.get)
   } else {
-    new DateTime().minusDays(ConfFromOptions.to())
+    LocalDateTime.now().minus(ConfFromOptions.to(), ChronoUnit.DAYS)
   }
 
   ConfigFromFile.configFileLoader(ConfFromOptions.configFile())
@@ -111,7 +114,7 @@ object Main extends App {
 
   val realTime = ConfFromOptions.realTime.get.get
 
-  def generateEvents = {
+  def generateEvents() = {
 
     val out = if (kafkaProducer.nonEmpty) {
       new KafkaOutputStream(kafkaProducer.get, ConfFromOptions.kafkaTopic.get.get)
@@ -155,18 +158,18 @@ object Main extends App {
     }
     System.err.println("Initial number of users: " + ConfFromOptions.nUsers() + ", Final number of users: " + nUsers)
 
-    val startTimeString = startTime.toString(DateTimeFormat.shortDateTime())
-    val endTimeString = endTime.toString(DateTimeFormat.shortDateTime())
+    val startTimeString =  startTime.toString
+    val endTimeString = endTime.toString
     System.err.println("Start: " + startTimeString + ", End: " + endTimeString)
 
     var lastTimeStamp = System.currentTimeMillis()
-    def showProgress(n: DateTime, users: Int, e: Int): Unit = {
+    def showProgress(n: LocalDateTime, users: Int, e: Int): Unit = {
       if ((e % 10000) == 0) {
         val now = System.currentTimeMillis()
         val rate = 10000000 / (now - lastTimeStamp)
         lastTimeStamp = now
         val message = // "Start: " + startTimeString + ", End: " + endTimeString + ", " +
-          "Now: " + n.toString(DateTimeFormat.shortDateTime()) + ", Events:" + e + ", Rate: " + rate + " eps"
+          "Now: " + n.toString + ", Events:" + e + ", Rate: " + rate + " eps"
         System.err.write("\r".getBytes)
         System.err.write(message.getBytes)
       }
@@ -180,19 +183,19 @@ object Main extends App {
     while (clock.isBefore(endTime)) {
 
       if (realTime) {
-        val now = new DateTime()
-        val dif = clock.getMillis - now.getMillis
-        if (dif > 0)
-          Thread.sleep(dif / 1000)
+        val now = LocalDateTime.now()
+        val dif = Duration.between(now, clock)
+        if (dif.isNegative)
+          Thread.sleep(-dif.getSeconds)
       }
 
       showProgress(clock, users.length, events)
       val u = users.dequeue()
       val prAttrition = nUsers * ConfFromOptions.attritionRate() *
-        (endTime.getMillis - startTime.getMillis / Constants.SECONDS_PER_YEAR)
+        (endTime.toEpochSecond(ZoneOffset.UTC) - startTime.toEpochSecond(ZoneOffset.UTC) / Constants.SECONDS_PER_YEAR)
       clock = u.session.nextEventTimeStamp.get
 
-      if (clock.isAfter(startTime)) u.writeEvent
+      if (clock.isAfter(startTime)) u.writeEvent()
       u.nextEvent(prAttrition)
       users += u
       events += 1
@@ -206,10 +209,12 @@ object Main extends App {
 
   }
 
-  if (ConfFromOptions.compute())
-    trackListenCount.compute
+  if (ConfFromOptions.generateCounts())
+    TrackListenCount.compute()
+  else if (ConfFromOptions.generateSimilarSongs())
+    SimilarSongParser.compute()
   else
-    this.generateEvents
+    this.generateEvents()
 
 }
 

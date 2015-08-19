@@ -17,7 +17,7 @@ To make this work, I did the following:
 
 * If you set the "damping" factors to zero, then users randomly arrive at the site according to a Poisson (memoryless)
 process, but with a minimum gap of 30 minutes between sessions.
-* The time between events for a use is given by a log-normal disribution
+* The time between events is given by a log-normal disribution
 * Once a sessions has started, the user will randomly traverse a set of states until the session ends. The probability
 of each state transition (including end of session) depends on the current state.
 * On average, users will behave the same way in a session, regardless of the time of day or day of week
@@ -45,9 +45,9 @@ value from an exponential distribution
 * Weekend Damping. This controls when and how quickly weekend traffic falls off
 * Seed. Seed for the random number generator.
 
-You also specify the event state machine. Each state includes a page and an HTTP status code. Status should be
-used to describe a user's status: unregistered, logged in, logged out, cancelled, etc. Pages are
-used to describe a user's page. Here is how you specify the state machine:
+You also specify the event state machine. Each state includes a page, an HTTP status code, a user level, and an
+authentication status. Status should be used to describe a user's status: unregistered, logged in, logged out,
+cancelled, etc. Pages are used to describe a user's page. Here is how you specify the state machine:
 
 * Transitions. Describe the pair of page and status before and after each transition, and the
 probability of the transition.
@@ -59,25 +59,11 @@ first time with one of those states).
 When you run the simulator, you specify the mean values for alpha and beata and the simulator picks values for specific
 users.
 
-Configuration
-=============
-
-The current version of the simulator is hard-coded for a music web site. You can modify it to work for other types
-of sites, but doing so will probably require modifications to the code (and not just to the config files).
+By the way: the current version of the simulator is hard-coded for a music web site. You can modify it to work for
+other types of sites, but doing so will probably require modifications to the code (and not just to the config files).
 
 Usage
 =====
-
-Start by installing scala. Easiest way on the Mac is
-
-    $ brew install scala
-
-On Linux
-
-    $ git clone https://github.com/Interana/eventsim/
-    $ echo "deb http://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
-    $ sudo apt-get update
-    $ sudo apt-get install openjdk-7-jdk scala sbt
 
 To build the executable, run
 
@@ -86,8 +72,7 @@ To build the executable, run
     $ chmod +x bin/eventsim
 
 
-The `bin/eventsim` script assumes a recent version of Java 8. You may have to modify it (drop the
-string optimization options) for earlier versions.
+(Eventsim requires Java 8.)
 
 You can then run the simulator from the root directory with a command like this
 

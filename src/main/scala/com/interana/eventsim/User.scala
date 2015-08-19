@@ -1,16 +1,15 @@
 package com.interana.eventsim
 
 import java.io.{OutputStream, Serializable}
+import java.time.{ZoneOffset, LocalDateTime}
 
 import com.fasterxml.jackson.core.{JsonEncoding, JsonFactory}
-import org.joda.time.DateTime
-import org.joda.time.format.ISODateTimeFormat
 
 import scala.util.parsing.json.JSONObject
 
 class User(val alpha: Double,
            val beta: Double,
-           val startTime: DateTime,
+           val startTime: LocalDateTime,
            val initialSessionStates: scala.collection.Map[(String,String),WeightedRandomThingGenerator[State]],
            val auth: String,
            val props: Map[String,Any],
@@ -27,9 +26,9 @@ class User(val alpha: Double,
   override def compare(that: User) =
     (that.session.nextEventTimeStamp, this.session.nextEventTimeStamp) match {
       case (None, None) => 0
-      case (_: Some[DateTime], None) => -1
-      case (None, _: Some[DateTime]) => 1
-      case (thatValue: Some[DateTime], thisValue: Some[DateTime]) =>
+      case (_: Some[LocalDateTime], None) => -1
+      case (None, _: Some[LocalDateTime]) => 1
+      case (thatValue: Some[LocalDateTime], thisValue: Some[LocalDateTime]) =>
         thatValue.get.compareTo(thisValue.get)
     }
 
@@ -54,7 +53,7 @@ class User(val alpha: Double,
   def eventString = {
     val showUserDetails = ConfigFromFile.showUserWithState(session.currentState.auth)
     var m = device.+(
-      "ts" -> session.nextEventTimeStamp.get.getMillis,
+      "ts" -> session.nextEventTimeStamp.get.toInstant(ZoneOffset.UTC).toEpochMilli,
       "userId" -> (if (showUserDetails) userId else ""),
       "sessionId" -> session.sessionId,
       "page" -> session.currentState.page,
@@ -84,13 +83,13 @@ class User(val alpha: Double,
 
   val writer = User.jsonFactory.createGenerator(stream, JsonEncoding.UTF8)
 
-  def writeEvent = {
+  def writeEvent() = {
     // use Jackson streaming to maximize efficiency
     // (earlier versions used Scala's std JSON generators, but they were slow)
     val showUserDetails = ConfigFromFile.showUserWithState(session.currentState.auth)
     writer.writeStartObject()
-    writer.writeNumberField("ts", session.nextEventTimeStamp.get.getMillis)
-    writer.writeStringField("userId", (if (showUserDetails) userId.toString() else ""))
+    writer.writeNumberField("ts", session.nextEventTimeStamp.get.toInstant(ZoneOffset.UTC)toEpochMilli())
+    writer.writeStringField("userId", if (showUserDetails) userId.toString else "")
     writer.writeNumberField("sessionId", session.sessionId)
     writer.writeStringField("page", session.currentState.page)
     writer.writeStringField("auth", session.currentState.auth)
@@ -121,8 +120,7 @@ class User(val alpha: Double,
     writer.flush()
   }
 
-  def tsToString(ts: DateTime) =
-      ts.toString(ISODateTimeFormat.dateTime())
+  def tsToString(ts: LocalDateTime) = ts.toString(/*ISODateTimeFormat.dateTime()*/)
 
   def nextEventTimeStampString =
     tsToString(this.session.nextEventTimeStamp.get)

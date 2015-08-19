@@ -1,8 +1,9 @@
 package com.interana.eventsim
 
+import java.time.LocalDateTime
+
 import com.interana.eventsim.TimeUtilities._
 import com.interana.eventsim.buildin.RandomSongGenerator
-import org.joda.time.DateTime
 
 /**
  * Created by jadler on 9/4/14.
@@ -10,7 +11,7 @@ import org.joda.time.DateTime
  * Object to capture session related calculations and properties
  *
  */
-class Session(var nextEventTimeStamp: Option[DateTime],
+class Session(var nextEventTimeStamp: Option[LocalDateTime],
               val alpha: Double, // expected request inter-arrival time
               val beta: Double,  // expected session inter-arrival time
               val initialStates: scala.collection.Map[(String,String),WeightedRandomThingGenerator[State]],
@@ -23,22 +24,20 @@ class Session(var nextEventTimeStamp: Option[DateTime],
   var currentState:State = initialStates((auth, level)).randomThing
   var currentSong:Option[(String,String,String,Double)] =
     if (currentState.page=="NextSong") Some(RandomSongGenerator.nextSong()) else None
-  var currentSongEnd:Option[DateTime] =
+  var currentSongEnd:Option[LocalDateTime] =
     if (currentState.page=="NextSong") Some(nextEventTimeStamp.get.plusSeconds(currentSong.get._4.toInt)) else None
 
   def incrementEvent() = {
     val nextState = currentState.nextState(rng)
     nextState match {
-      case None => {
-        //nextEventTimeStamp=None
+      case None =>
         done=true
-      }
-      case x if 300 until 399 contains x.get.status => {
+      case x if 300 until 399 contains x.get.status =>
         nextEventTimeStamp=Some(nextEventTimeStamp.get.plusSeconds(1))
         currentState = nextState.get
         itemInSession += 1
-      }
-      case x if x.get.page=="NextSong" => {
+
+      case x if x.get.page=="NextSong" =>
         if (currentSong.isEmpty) {
           nextEventTimeStamp=Some(nextEventTimeStamp.get.plusSeconds(exponentialRandomValue(alpha).toInt))
           currentSong = Some(RandomSongGenerator.nextSong())
@@ -52,12 +51,12 @@ class Session(var nextEventTimeStamp: Option[DateTime],
         currentSongEnd = Some(nextEventTimeStamp.get.plusSeconds(currentSong.get._4.toInt))
         currentState = nextState.get
         itemInSession += 1
-      }
-      case _ => {
+
+      case _ =>
         nextEventTimeStamp=Some(nextEventTimeStamp.get.plusSeconds(exponentialRandomValue(alpha).toInt))
         currentState = nextState.get
         itemInSession += 1
-      }
+
     }
   }
 
@@ -69,22 +68,22 @@ class Session(var nextEventTimeStamp: Option[DateTime],
 
 object Session {
 
-  def pickFirstTimeStamp(st: DateTime,
+  def pickFirstTimeStamp(st: LocalDateTime,
     alpha: Double, // expected request inter-arrival time
     beta: Double   // expected session inter-arrival time
-   ): DateTime = {
+   ): LocalDateTime = {
     // pick random start point, iterate to steady state
     val startPoint = st.minusSeconds(beta.toInt * 2)
     var candidate = pickNextSessionStartTime(startPoint, beta)
-    while (new DateTime(candidate).isBefore(new DateTime(st).minusSeconds(beta.toInt))) {
+    while (candidate.isBefore(st.minusSeconds(beta.toInt))) {
       candidate = pickNextSessionStartTime(candidate, beta)
     }
     candidate
   }
 
-  def pickNextSessionStartTime(lastTimeStamp: DateTime, beta: Double): DateTime = {
+  def pickNextSessionStartTime(lastTimeStamp: LocalDateTime, beta: Double): LocalDateTime = {
     val randomGap = exponentialRandomValue(beta).toInt + ConfigFromFile.sessionGap
-    val nextTimestamp: DateTime = TimeUtilities.standardWarp(lastTimeStamp.plusSeconds(randomGap))
+    val nextTimestamp: LocalDateTime = TimeUtilities.standardWarp(lastTimeStamp.plusSeconds(randomGap))
     assert(randomGap > 0)
 
     if (nextTimestamp.isBefore(lastTimeStamp)) {

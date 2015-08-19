@@ -1,7 +1,8 @@
 package com.interana.eventsim.buildin
 
+import java.time.{ZoneOffset, LocalDateTime}
+
 import com.interana.eventsim.{Constants, Main, TimeUtilities}
-import org.joda.time.DateTime
 
 object UserProperties {
   // utilities for generating random properties for users
@@ -12,7 +13,7 @@ object UserProperties {
         TimeUtilities.exponentialRandomValue(Main.ConfFromOptions.growthRate.get.getOrElse(0.2)*Constants.SECONDS_PER_YEAR).toInt,
         (Constants.SECONDS_PER_YEAR * 5).toInt)
 
-    val registrationTime = new DateTime().minusSeconds(secondsSinceRegistration)
+    val registrationTime = Main.startTime.minusSeconds(secondsSinceRegistration)
     val firstNameAndGender = RandomFirstNameGenerator.randomThing
     val location = RandomLocationGenerator.randomThing
 
@@ -20,12 +21,12 @@ object UserProperties {
       "lastName" -> RandomLastNameGenerator.randomThing,
       "firstName" -> firstNameAndGender._1,
       "gender" -> firstNameAndGender._2,
-      "registration" -> registrationTime.getMillis(),
+      "registration" -> registrationTime.toInstant(ZoneOffset.UTC).toEpochMilli,
       "location" -> location
     )
   }
 
-  def randomNewProps(dt: DateTime) =
-    randomProps + ("registration" -> dt.getMillis())
+  def randomNewProps(dt: LocalDateTime) =
+    randomProps + ("registration" -> dt.toInstant(ZoneOffset.UTC).toEpochMilli)
 
 }

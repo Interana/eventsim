@@ -1,24 +1,27 @@
 package com.interana.eventsim
 
+import java.time.temporal.{ChronoField, ChronoUnit}
+import java.time.{DayOfWeek, Duration, LocalDateTime, LocalDate}
+
 import com.interana.eventsim.Constants._
-import de.jollyday.{HolidayCalendar, HolidayManager}
+import de.jollyday.HolidayManager
 import org.apache.commons.math3.random.MersenneTwister
-import org.joda.time.{DateTime, DateTimeConstants, Interval, LocalDate}
 
 object TimeUtilities {
 
+  // def dateTimeToLocalDate(dt: Instant): LocalDate = LocalDate.from(Instant.ofEpochMilli(dt.getMillis()))
+
   // first implementation: US only
-  val holidays = HolidayManager.getInstance(HolidayCalendar.UNITED_STATES)
+  val holidays = HolidayManager.getInstance()
   def isHoliday(ld: LocalDate): Boolean = holidays.isHoliday(ld)
-  def isHoliday(ts: DateTime): Boolean = isHoliday(new LocalDate(ts))
 
   def isWeekend(ld: LocalDate): Boolean = {
     val dow = ld.getDayOfWeek
-    dow == DateTimeConstants.SATURDAY || dow == DateTimeConstants.SUNDAY
+    dow == DayOfWeek.SATURDAY || dow == DayOfWeek.SUNDAY
   }
-  def isWeekend(ts: DateTime): Boolean = isWeekend(new LocalDate(ts))
 
-  def isWeekendOrHoliday(ld: LocalDate) = isWeekend(ld) || isHoliday(ld)
+  def isWeekendOrHoliday(i: LocalDateTime): Boolean = isWeekendOrHoliday(LocalDate.from(i))
+  def isWeekendOrHoliday(ld: LocalDate): Boolean = isWeekend(ld) || isHoliday(ld)
 
   val rng = new MersenneTwister(Main.seed) // Mersenne Twisters are fast and good enough for fake data
 
@@ -28,98 +31,99 @@ object TimeUtilities {
 
   def exponentialRandomValue(mu: Double) = -mu * Math.log(rng.nextDouble())
 
-  def weekendDamping(dt: DateTime) = {
-    // gradually scale down traffic volume on weekends
-    val lastMidnight = dt.withMillisOfDay(0)
-    val noon = lastMidnight.withHourOfDay(12)
-    val lastNoon = noon.minusDays(1)
-    val nextMidnight = lastMidnight.plusDays(1)
-    val nextNoon = noon.plusDays(1)
 
-    val wOrH_yesterday = isWeekendOrHoliday(lastNoon.toLocalDate)
-    val wOrH_noon      = isWeekendOrHoliday(noon.toLocalDate)
-    val wOrH_tomorrow  = isWeekendOrHoliday(nextNoon.toLocalDate)
+  def weekendDamping(dt: LocalDateTime) = {
+    // gradually scale down traffic volume on weekends
+    val lastMidnight = dt.truncatedTo(ChronoUnit.DAYS)
+    val noon = lastMidnight.plus(12, ChronoUnit.HOURS)
+    val lastNoon = noon.minus(1, ChronoUnit.DAYS)
+    val nextMidnight = lastMidnight.plus(1, ChronoUnit.DAYS)
+    val nextNoon = noon.plus(1, ChronoUnit.DAYS)
+
+    val wOrH_yesterday = isWeekendOrHoliday(lastNoon)
+    val wOrH_noon      = isWeekendOrHoliday(noon)
+    val wOrH_tomorrow  = isWeekendOrHoliday(nextNoon)
 
     (wOrH_yesterday, wOrH_noon, wOrH_tomorrow) match {
       case (false, false, false) => 0.0
       case (true,  true,  true) => ConfigFromFile.weekendDamping
 
       case (false, false, true) =>
-        val nextMidnightMinusOffset = nextMidnight.minusMinutes(ConfigFromFile.weekendDampingOffset)
+        val nextMidnightMinusOffset = nextMidnight.minus(ConfigFromFile.weekendDampingOffset, ChronoUnit.MINUTES)
         if (dt.isBefore(nextMidnightMinusOffset))
           0.0
         else
           ConfigFromFile.weekendDamping *
-            (new Interval(nextMidnightMinusOffset, dt).toDurationMillis / 60000) / ConfigFromFile.weekendDampingScale
+            Duration.between(nextMidnightMinusOffset, dt).toMillis / 60000 / ConfigFromFile.weekendDampingScale
 
       case (true, false, false) =>
-        val lastMidnightPlusOffset = lastMidnight.plusMinutes(ConfigFromFile.weekendDampingOffset)
+        val lastMidnightPlusOffset = lastMidnight.plus(ConfigFromFile.weekendDampingOffset, ChronoUnit.MINUTES)
         if (dt.isAfter(lastMidnightPlusOffset))
           0.0
         else
           ConfigFromFile.weekendDamping *
-            (new Interval(dt, lastMidnightPlusOffset).toDurationMillis / 60000) / ConfigFromFile.weekendDampingScale
+            Duration.between(dt, lastMidnightPlusOffset).toMillis / 60000 / ConfigFromFile.weekendDampingScale
 
       case (false, true, false) =>
-        val lastMidnightMinusOffset = lastMidnight.minusMinutes(ConfigFromFile.weekendDampingOffset)
-        val endOfRampUp = lastMidnightMinusOffset.plusMinutes(ConfigFromFile.weekendDampingScale)
-        val nextMidnightPlusOffset = nextMidnight.plusMinutes(ConfigFromFile.weekendDampingOffset)
-        val startOfRollDown = nextMidnightPlusOffset.minusMinutes(ConfigFromFile.weekendDampingScale)
+        val lastMidnightMinusOffset = lastMidnight.minus(ConfigFromFile.weekendDampingOffset, ChronoUnit.MINUTES)
+        val endOfRampUp = lastMidnightMinusOffset.plus(ConfigFromFile.weekendDampingScale, ChronoUnit.MINUTES)
+        val nextMidnightPlusOffset = nextMidnight.plus(ConfigFromFile.weekendDampingOffset, ChronoUnit.MINUTES)
+        val startOfRollDown = nextMidnightPlusOffset.minus(ConfigFromFile.weekendDampingScale, ChronoUnit.MINUTES)
         if (dt.isBefore(endOfRampUp))
           ConfigFromFile.weekendDamping *
-            (new Interval(lastMidnightMinusOffset, dt).toDurationMillis / 60000) / ConfigFromFile.weekendDampingScale
+            Duration.between(lastMidnightMinusOffset, dt).toMillis / 60000 / ConfigFromFile.weekendDampingScale
         else if (dt.isAfter(startOfRollDown))
           ConfigFromFile.weekendDamping *
-            (new Interval(dt, nextMidnightPlusOffset).toDurationMillis / 60000) / ConfigFromFile.weekendDampingScale
+            Duration.between(dt, nextMidnightPlusOffset).toMillis / 60000 / ConfigFromFile.weekendDampingScale
         else ConfigFromFile.weekendDamping
 
       case (false, true, true) =>
-        val lastMidnightMinusOffset = lastMidnight.minusMinutes(ConfigFromFile.weekendDampingOffset)
-        val endOfRampUp = lastMidnightMinusOffset.plusMinutes(ConfigFromFile.weekendDampingScale)
+        val lastMidnightMinusOffset = lastMidnight.minus(ConfigFromFile.weekendDampingOffset, ChronoUnit.MINUTES)
+        val endOfRampUp = lastMidnightMinusOffset.plus(ConfigFromFile.weekendDampingScale, ChronoUnit.MINUTES)
         if (dt.isBefore(endOfRampUp))
           ConfigFromFile.weekendDamping *
-            (new Interval(lastMidnightMinusOffset, dt).toDurationMillis / 60000) / ConfigFromFile.weekendDampingScale
+            Duration.between(lastMidnightMinusOffset, dt).toMillis / 60000 / ConfigFromFile.weekendDampingScale
         else ConfigFromFile.weekendDamping
 
       case (true, false, true) =>
-        val lastMidnightPlusOffset = lastMidnight.plusMinutes(ConfigFromFile.weekendDampingOffset)
-        val nextMidnightMinusOffset = nextMidnight.minusMinutes(ConfigFromFile.weekendDampingOffset)
+        val lastMidnightPlusOffset = lastMidnight.plus(ConfigFromFile.weekendDampingOffset, ChronoUnit.MINUTES)
+        val nextMidnightMinusOffset = nextMidnight.minus(ConfigFromFile.weekendDampingOffset, ChronoUnit.MINUTES)
         if (dt.isBefore(lastMidnightPlusOffset)) {
           ConfigFromFile.weekendDamping *
-            (new Interval(dt, lastMidnightPlusOffset).toDurationMillis / 60000) / ConfigFromFile.weekendDampingScale
+            Duration.between(dt, lastMidnightPlusOffset).toMillis / 60000 / ConfigFromFile.weekendDampingScale
         } else if (dt.isAfter(nextMidnightMinusOffset)) {
           ConfigFromFile.weekendDamping *
-            (new Interval(nextMidnightMinusOffset, dt).toDurationMillis / 60000) / ConfigFromFile.weekendDampingScale
+            Duration.between(nextMidnightMinusOffset, dt).toMillis / 60000 / ConfigFromFile.weekendDampingScale
         } else
           0.0
 
       case (true, true, false) =>
-        val nextMidnightPlusOffset = nextMidnight.plusMinutes(ConfigFromFile.weekendDampingOffset)
-        val startOfRollDown = nextMidnightPlusOffset.minusMinutes(ConfigFromFile.weekendDampingScale)
+        val nextMidnightPlusOffset = nextMidnight.plus(ConfigFromFile.weekendDampingOffset, ChronoUnit.MINUTES)
+        val startOfRollDown = nextMidnightPlusOffset.minus(ConfigFromFile.weekendDampingScale, ChronoUnit.MINUTES)
         if (dt.isAfter(startOfRollDown))
           ConfigFromFile.weekendDamping *
-            (new Interval(dt, nextMidnightPlusOffset).toDurationMillis / 60000) / ConfigFromFile.weekendDampingScale
+            Duration.between(dt, nextMidnightPlusOffset).toMillis / 60000 / ConfigFromFile.weekendDampingScale
         else ConfigFromFile.weekendDamping
 
     }
   }
 
-  def keepThisDate(lastTs: DateTime, newTs: DateTime) =
+  def keepThisDate(lastTs: LocalDateTime, newTs: LocalDateTime) =
     if (weekendDamping(newTs) > 0.0) rng.nextDouble() < 1.0 - weekendDamping(newTs) else true
 
-  def warpOffset(ts:DateTime, offsetSeconds: Long, dampingFactor: Double): Int = {
-    val s = ts.secondOfDay().get().toLong
+  def warpOffset(ts:LocalDateTime, offsetSeconds: Long, dampingFactor: Double): Int = {
+    val s = ts.getLong(ChronoField.SECOND_OF_DAY)
     (dampingFactor * SECONDS_PER_DAY * Math.sin( (s - offsetSeconds) * 2 * Math.PI / SECONDS_PER_DAY)).toInt
   }
 
-  def standardOffset(ts: DateTime) = warpOffset(ts, THREE_AM, ConfigFromFile.damping)
-  def standardWarp(ts: DateTime) = ts.plusSeconds(warpOffset(ts, THREE_AM, ConfigFromFile.damping))
+  def standardOffset(ts: LocalDateTime) = warpOffset(ts, THREE_AM, ConfigFromFile.damping)
+  def standardWarp(ts: LocalDateTime) = ts.plusSeconds(warpOffset(ts, THREE_AM, ConfigFromFile.damping))
 
-  def reverseWarpOffset(ts: DateTime, offsetSeconds: Long, dampingFactor: Double) = {
-    val s = ts.secondOfDay().get().toLong
+  def reverseWarpOffset(ts: LocalDateTime, offsetSeconds: Long, dampingFactor: Double) = {
+    val s = ts.getLong(ChronoField.SECOND_OF_DAY)
     (Math.asin(s / (dampingFactor * SECONDS_PER_DAY)) / (2 * Math.PI / SECONDS_PER_DAY ) + offsetSeconds).toInt
   }
 
-  def reverseStandardWarp(ts: DateTime) = ts.minusSeconds(reverseWarpOffset(ts, THREE_AM, ConfigFromFile.damping))
+  def reverseStandardWarp(ts: LocalDateTime) = ts.minusSeconds(reverseWarpOffset(ts, THREE_AM, ConfigFromFile.damping))
 
 }
