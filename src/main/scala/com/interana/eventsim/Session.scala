@@ -11,8 +11,8 @@ import org.joda.time.DateTime
  *
  */
 class Session(var nextEventTimeStamp: Option[DateTime],
-              val alpha: Double, // alpha = expected request inter-arrival time
-              val beta: Double,  // beta  = expected session inter-arrival time
+              val alpha: Double, // expected request inter-arrival time
+              val beta: Double,  // expected session inter-arrival time
               val initialStates: scala.collection.Map[(String,String),WeightedRandomThingGenerator[State]],
               val auth: String,
               val level: String ) {
@@ -59,27 +59,6 @@ class Session(var nextEventTimeStamp: Option[DateTime],
         itemInSession += 1
       }
     }
-
-    /*
-    if (nextState.nonEmpty) {
-
-      val nextTimeStamp = nextEventTimeStamp.get.plusSeconds(
-        nextState.get match {
-        case x if 300 until 399 contains x.status => 1
-        case x if x.page=="NextSong" => 1
-        case _ => exponentialRandomValue(alpha).toInt
-      })
-
-      //val nextTimeStamp =
-      //  nextEventTimeStamp.get.plusSeconds(
-      //if (nextState.get.status >= 300 && nextState.get.status <= 399) 1 else exponentialRandomValue(alpha).toInt)
-      nextEventTimeStamp = Some(nextTimeStamp)
-      currentState = nextState.get
-      itemInSession += 1
-    } else {
-      done = true
-    }
-    */
   }
 
   def nextSession =
@@ -91,8 +70,8 @@ class Session(var nextEventTimeStamp: Option[DateTime],
 object Session {
 
   def pickFirstTimeStamp(st: DateTime,
-    alpha: Double, // alpha = expected request inter-arrival time
-    beta: Double  // beta  = expected session inter-arrival time
+    alpha: Double, // expected request inter-arrival time
+    beta: Double   // expected session inter-arrival time
    ): DateTime = {
     // pick random start point, iterate to steady state
     val startPoint = st.minusSeconds(beta.toInt * 2)
@@ -104,13 +83,13 @@ object Session {
   }
 
   def pickNextSessionStartTime(lastTimeStamp: DateTime, beta: Double): DateTime = {
-    val randomGap = exponentialRandomValue(beta).toInt + SiteConfig.sessionGap
+    val randomGap = exponentialRandomValue(beta).toInt + ConfigFromFile.sessionGap
     val nextTimestamp: DateTime = TimeUtilities.standardWarp(lastTimeStamp.plusSeconds(randomGap))
     assert(randomGap > 0)
 
     if (nextTimestamp.isBefore(lastTimeStamp)) {
       // force forward progress
-      pickNextSessionStartTime(lastTimeStamp.plusSeconds(SiteConfig.sessionGap), beta)
+      pickNextSessionStartTime(lastTimeStamp.plusSeconds(ConfigFromFile.sessionGap), beta)
     } else if (keepThisDate(lastTimeStamp, nextTimestamp)) {
       nextTimestamp
     } else

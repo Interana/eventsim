@@ -7,7 +7,7 @@ import scala.io.Source
  *  Site configuration (loaded from JSON file, used to run simulation)
  */
 
-object SiteConfig {
+object ConfigFromFile {
 
   val initialStates = scala.collection.mutable.HashMap[(String,String),WeightedRandomThingGenerator[State]]()
 
@@ -29,6 +29,11 @@ object SiteConfig {
   var seed = 0L
   var newUserAuth:String = Constants.DEFAULT_NEW_USER_AUTH
   var newUserLevel:String = Constants.DEFAULT_NEW_USER_LEVEL
+
+  var startDate:Option[String] = None
+  var endDate:Option[String] = None
+  var nUsers:Option[Int] = None
+  var firstUserId:Option[Int] = None
 
   // tags for JSON config file
   val TRANSITIONS = "transitions"
@@ -58,6 +63,11 @@ object SiteConfig {
   val WEEKEND_DAMPING = "weekend-damping"
   val WEEKEND_DAMPING_OFFSET = "weekend-damping-offset"
   val WEEKEND_DAMPING_SCALE = "weekend-damping-scale"
+
+  val START_DATE = "start-date"
+  val END_DATE = "end-date"
+  val N_USERS = "n-users"
+  val FIRST_USER_ID = "first-user-id"
 
   def configFileLoader(fn: String) = {
 
@@ -122,6 +132,27 @@ object SiteConfig {
       case x: Some[Any] => newUserLevel = x.get.asInstanceOf[String]
       case None =>
     }
+
+    jsonContents.get(START_DATE) match {
+      case x: Some[Any] => startDate = Some(x.get.asInstanceOf[String])
+      case None =>
+    }
+
+    jsonContents.get(END_DATE) match {
+      case x: Some[Any] => endDate = Some(x.get.asInstanceOf[String])
+      case None =>
+    }
+
+    jsonContents.get(N_USERS) match {
+      case x: Some[Any] => nUsers = Some(x.get.asInstanceOf[Double].toInt)
+      case None =>
+    }
+
+    jsonContents.get(FIRST_USER_ID) match {
+      case x: Some[Any] => firstUserId = Some(x.get.asInstanceOf[Double].toInt)
+      case None =>
+    }
+
 
     churnedState = jsonContents.get(CHURNED_STATE).asInstanceOf[Option[String]]
 

@@ -2,14 +2,14 @@ package com.interana.eventsim
 
 import java.io.{OutputStream, Serializable}
 
-import com.fasterxml.jackson.core.{JsonEncoding, JsonFactory, JsonGenerator}
+import com.fasterxml.jackson.core.{JsonEncoding, JsonFactory}
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
 
 import scala.util.parsing.json.JSONObject
 
-class User(val alpha: Double, // alpha = expected request inter-arrival time
-           val beta: Double,  // beta  = expected session inter-arrival time
+class User(val alpha: Double,
+           val beta: Double,
            val startTime: DateTime,
            val initialSessionStates: scala.collection.Map[(String,String),WeightedRandomThingGenerator[State]],
            val auth: String,
@@ -24,7 +24,7 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
     Some(Session.pickFirstTimeStamp(startTime, alpha, beta)),
       alpha, beta, initialSessionStates, auth, initialLevel)
 
-  override def compare(that: User): Int =
+  override def compare(that: User) =
     (that.session.nextEventTimeStamp, this.session.nextEventTimeStamp) match {
       case (None, None) => 0
       case (_: Some[DateTime], None) => -1
@@ -39,7 +39,7 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
     session.incrementEvent()
     if (session.done) {
       if (TimeUtilities.rng.nextDouble() < prAttrition ||
-          session.currentState.auth == SiteConfig.churnedState.getOrElse("")) {
+          session.currentState.auth == ConfigFromFile.churnedState.getOrElse("")) {
         session.nextEventTimeStamp = None
         // TODO: mark as churned
       }
@@ -52,7 +52,7 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
   private val EMPTY_MAP = Map()
 
   def eventString = {
-    val showUserDetails = SiteConfig.showUserWithState(session.currentState.auth)
+    val showUserDetails = ConfigFromFile.showUserWithState(session.currentState.auth)
     var m = device.+(
       "ts" -> session.nextEventTimeStamp.get.getMillis,
       "userId" -> (if (showUserDetails) userId else ""),
@@ -67,6 +67,9 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
     if (showUserDetails)
       m ++= props
 
+    /* most of the event generator code is pretty generic, but this is hard-coded
+     * for a fake music web site
+     */
     if (session.currentState.page=="NextSong")
       m += (
         "artist" -> session.currentSong.get._2,
@@ -79,10 +82,12 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
   }
 
 
-  val writer: JsonGenerator = User.jsonFactory.createGenerator(stream, JsonEncoding.UTF8)
+  val writer = User.jsonFactory.createGenerator(stream, JsonEncoding.UTF8)
 
   def writeEvent = {
-    val showUserDetails = SiteConfig.showUserWithState(session.currentState.auth)
+    // use Jackson streaming to maximize efficiency
+    // (earlier versions used Scala's std JSON generators, but they were slow)
+    val showUserDetails = ConfigFromFile.showUserWithState(session.currentState.auth)
     writer.writeStartObject()
     writer.writeNumberField("ts", session.nextEventTimeStamp.get.getMillis)
     writer.writeStringField("userId", (if (showUserDetails) userId.toString() else ""))
@@ -103,8 +108,8 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
           case _: Float => writer.writeNumberField(p._1, p._2.asInstanceOf[Float])
           case _: String => writer.writeStringField(p._1, p._2.asInstanceOf[String])
         }})
-      if (Main.Conf.tag.isSupplied)
-        writer.writeStringField("tag", Main.Conf.tag.get.get)
+      if (Main.ConfFromOptions.tag.isSupplied)
+        writer.writeStringField("tag", Main.ConfFromOptions.tag.get.get)
     }
     if (session.currentState.page=="NextSong") {
       writer.writeStringField("artist", session.currentSong.get._2)
@@ -116,11 +121,11 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
     writer.flush()
   }
 
-  def tsToString(ts: DateTime): String = {
+  def tsToString(ts: DateTime) =
       ts.toString(ISODateTimeFormat.dateTime())
-  }
 
-  def nextEventTimeStampString = tsToString(this.session.nextEventTimeStamp.get)
+  def nextEventTimeStampString =
+    tsToString(this.session.nextEventTimeStamp.get)
 
   def mkString = props.+(
     "alpha" -> alpha,
@@ -131,7 +136,6 @@ class User(val alpha: Double, // alpha = expected request inter-arrival time
     "sessionId" -> session.sessionId ,
     "userId" -> userId ,
     "currentState" -> session.currentState)
-
 }
 
 object User {

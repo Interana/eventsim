@@ -4,10 +4,11 @@ import scala.collection.mutable.ArrayBuffer
 
 /**
  * Created by jadler on 9/2/14.
- * Class to randomly return a weighted thing from a list of things
+ * Class to randomly return a thing from a (weighted) list of things
  */
+
 class WeightedRandomThingGenerator[T]  {
-  var ab = new ArrayBuffer[(T, Integer)](0)
+  val ab = new ArrayBuffer[(T, Integer)](0)
   var a = new Array[(T, Integer)](0)
   var ready = false
   var totalWeight: Integer = 0
@@ -25,7 +26,7 @@ class WeightedRandomThingGenerator[T]  {
     override def compare(x: (T, Integer), y: (T, Integer)): Int = x._2.compareTo(y._2)
   }
 
-  def randomThing: T = {
+  def randomThing = {
     if (!ready) {
       a = ab.toArray
       ready = true

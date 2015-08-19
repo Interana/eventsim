@@ -14,11 +14,11 @@ class KafkaOutputStream(val producer: Producer[Array[Byte],Array[Byte]], val top
 
   val buffer = new ArrayBuffer[Byte](4096)
 
-  override def write(i: Int): Unit = {
+  override def write(i: Int) = {
     buffer.append(i.toByte)
   }
 
-  override def flush(): Unit = {
+  override def flush() = {
     val msg = new KeyedMessage[Array[Byte], Array[Byte]](topic, buffer.toArray[Byte] )
     producer.send(msg)
     buffer.clear()

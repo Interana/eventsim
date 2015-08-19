@@ -4,6 +4,7 @@ import java.io.FileOutputStream
 import java.util.Properties
 
 import com.interana.eventsim.Utilities.trackListenCount
+import com.interana.eventsim.buildin.{UserProperties, DeviceProperties}
 import kafka.producer.{Producer, ProducerConfig}
 import org.joda.time.DateTime
 import org.joda.time.format.{DateTimeFormat, ISODateTimeFormat}
@@ -18,7 +19,7 @@ object Main extends App {
 
   val users = new mutable.PriorityQueue[User]()
 
-  object Conf extends ScallopConf(args) {
+  object ConfFromOptions extends ScallopConf(args) {
     val nUsers: ScallopOption[Int] =
       opt[Int]("nusers", descr = "initial number of users",
         required = false, default = Option(1))
@@ -33,12 +34,11 @@ object Main extends App {
 
     val startTimeArg: ScallopOption[String] =
       opt[String]("start-time", descr = "start time for data",
-        required = false, default = Option(new DateTime().minusDays(14).toString(ISODateTimeFormat.dateTime()))
-      )
+        required = false, default = Option(new DateTime().minusDays(14).toString(ISODateTimeFormat.dateTime())))
+
     val endTimeArg: ScallopOption[String] =
       opt[String]("end-time", descr = "end time for data",
-        required = false, default = Option(new DateTime().minusDays(7).toString(ISODateTimeFormat.dateTime()))
-      )
+        required = false, default = Option(new DateTime().minusDays(7).toString(ISODateTimeFormat.dateTime())))
 
     val from: ScallopOption[Int] =
       opt[Int]("from", descr = "from x days ago", required = false, default = Option(15))
@@ -58,7 +58,8 @@ object Main extends App {
     val tag: ScallopOption[String] =
       opt[String]("tag", descr = "tag applied to each line", required = false)
 
-    val verbose = toggle("verbose", default = Some(false), descrYes = "verbose output (not implemented yet)", descrNo = "silent mode")
+    val verbose = toggle("verbose", default = Some(false),
+      descrYes = "verbose output (not implemented yet)", descrNo = "silent mode")
     val outputFile: ScallopOption[String] = trailArg[String]("output-file", required = false, descr = "File name")
 
     val kafkaTopic: ScallopOption[String] =
@@ -67,90 +68,92 @@ object Main extends App {
     val kafkaBrokerList: ScallopOption[String] =
       opt[String]("kafkaBrokerList", descr = "kafka broker list", required = false)
 
-    val compute = toggle("compute", default = Some(false), descrYes = "compute listen counts then stop", descrNo = "run normally")
+    val compute = toggle("compute", default = Some(false),
+      descrYes = "create listen counts file then stop", descrNo = "run normally")
 
-    val realTime = toggle("continuous", default = Some(false), descrYes = "continuous output", descrNo = "run all at once")
+    val realTime = toggle("continuous", default = Some(false),
+      descrYes = "continuous output", descrNo = "run all at once")
 
   }
 
-  val startTime = if (Conf.startTimeArg.isSupplied) {
-    new DateTime(Conf.startTimeArg())
+  val startTime = if (ConfFromOptions.startTimeArg.isSupplied) {
+    new DateTime(ConfFromOptions.startTimeArg())
+  } else if (ConfigFromFile.startDate.nonEmpty) {
+    new DateTime(ConfigFromFile.startDate.get)
   } else {
-    new DateTime().minusDays(Conf.from())
+    new DateTime().minusDays(ConfFromOptions.from())
   }
 
-  val endTime = if (Conf.endTimeArg.isSupplied) {
-    new DateTime(Conf.endTimeArg())
+  val endTime = if (ConfFromOptions.endTimeArg.isSupplied) {
+    new DateTime(ConfFromOptions.endTimeArg())
+  } else if (ConfigFromFile.endDate.nonEmpty) {
+    new DateTime(ConfigFromFile.endDate.get)
   } else {
-    new DateTime().minusDays(Conf.to())
-    new DateTime().minusDays(Conf.to())
+    new DateTime().minusDays(ConfFromOptions.to())
   }
 
-  SiteConfig.configFileLoader(Conf.configFile())
+  ConfigFromFile.configFileLoader(ConfFromOptions.configFile())
 
-  var nUsers = Conf.nUsers()
+  var nUsers = ConfigFromFile.nUsers.getOrElse(ConfFromOptions.nUsers())
 
-  var seed = if (Conf.randomSeed.isSupplied) {
-    Conf.randomSeed.get.get.toLong
+  val seed = if (ConfFromOptions.randomSeed.isSupplied) {
+    ConfFromOptions.randomSeed.get.get.toLong
   } else {
-    SiteConfig.seed
+    ConfigFromFile.seed
   }
 
-  val kafkaProducer = if (Conf.kafkaBrokerList.isDefined) {
+  val kafkaProducer = if (ConfFromOptions.kafkaBrokerList.isDefined) {
     val kafkaProperties = new Properties()
-    kafkaProperties.setProperty("metadata.broker.list", Conf.kafkaBrokerList.get.get)
+    kafkaProperties.setProperty("metadata.broker.list", ConfFromOptions.kafkaBrokerList.get.get)
     val producerConfig = new ProducerConfig(kafkaProperties)
     new Some(new Producer[Array[Byte],Array[Byte]](producerConfig))
   } else None
 
-  val realTime = Conf.realTime.get.get
+  val realTime = ConfFromOptions.realTime.get.get
 
-  def doStuff = {
+  def generateEvents = {
 
     val out = if (kafkaProducer.nonEmpty) {
-      new KafkaOutputStream(kafkaProducer.get, Conf.kafkaTopic.get.get)
-    } else if (Conf.outputFile.isSupplied) {
-      new FileOutputStream(Conf.outputFile())
-      //new PrintWriter(Conf.outputFile())
+      new KafkaOutputStream(kafkaProducer.get, ConfFromOptions.kafkaTopic.get.get)
+    } else if (ConfFromOptions.outputFile.isSupplied) {
+      new FileOutputStream(ConfFromOptions.outputFile())
     } else {
       System.out
     }
 
     (0 until nUsers).foreach((_) =>
       users += new User(
-        SiteConfig.alpha * logNormalRandomValue, // alpha = expected request inter-arrival time
-        SiteConfig.beta * logNormalRandomValue, // beta = expected session inter-arrival time
-        startTime, // start time
-        SiteConfig.initialStates, // initial session states
-        SiteConfig.authGenerator.randomThing,
+        ConfigFromFile.alpha * logNormalRandomValue,
+        ConfigFromFile.beta * logNormalRandomValue,
+        startTime,
+        ConfigFromFile.initialStates,
+        ConfigFromFile.authGenerator.randomThing,
         UserProperties.randomProps,
         DeviceProperties.randomProps,
-        SiteConfig.levelGenerator.randomThing,
+        ConfigFromFile.levelGenerator.randomThing,
         out
       ))
 
-    if (Conf.growthRate() > 0) {
+    if (ConfFromOptions.growthRate() > 0) {
       var current = startTime
       while (current.isBefore(endTime)) {
-        val mu = Constants.SECONDS_PER_YEAR / (nUsers * Conf.growthRate())
+        val mu = Constants.SECONDS_PER_YEAR / (nUsers * ConfFromOptions.growthRate())
         current = current.plusSeconds(TimeUtilities.exponentialRandomValue(mu).toInt)
         users += new User(
-          SiteConfig.alpha * logNormalRandomValue, // alpha = expected request inter-arrival time
-          SiteConfig.beta * logNormalRandomValue, // beta = expected session inter-arrival time
-          current, // start time
-          SiteConfig.initialStates, // initial session states
-          SiteConfig.newUserAuth,
+          ConfigFromFile.alpha * logNormalRandomValue,
+          ConfigFromFile.beta * logNormalRandomValue,
+          current,
+          ConfigFromFile.initialStates,
+          ConfigFromFile.newUserAuth,
           UserProperties.randomNewProps(current),
           DeviceProperties.randomProps,
-          SiteConfig.newUserLevel,
+          ConfigFromFile.newUserLevel,
           out
         )
         nUsers += 1
       }
     }
-    System.err.println("Initial number of users: " + Conf.nUsers() + ", Final number of users: " + nUsers)
-
-
+    System.err.println("Initial number of users: " + ConfFromOptions.nUsers() + ", Final number of users: " + nUsers)
 
     val startTimeString = startTime.toString(DateTimeFormat.shortDateTime())
     val endTimeString = endTime.toString(DateTimeFormat.shortDateTime())
@@ -159,7 +162,6 @@ object Main extends App {
     var lastTimeStamp = System.currentTimeMillis()
     def showProgress(n: DateTime, users: Int, e: Int): Unit = {
       if ((e % 10000) == 0) {
-        // val elapsed = new Interval(actualStartTime, new DateTime())
         val now = System.currentTimeMillis()
         val rate = 10000000 / (now - lastTimeStamp)
         lastTimeStamp = now
@@ -170,15 +172,12 @@ object Main extends App {
       }
     }
     System.err.println("Starting to generate events.")
-    System.err.println("Damping=" + SiteConfig.damping + ", Weekend-Damping=" + SiteConfig.weekendDamping)
+    System.err.println("Damping=" + ConfigFromFile.damping + ", Weekend-Damping=" + ConfigFromFile.weekendDamping)
 
     var clock = startTime
     var events = 1
-    //val bins = scala.collection.mutable.HashMap[Long, Int]()
 
     while (clock.isBefore(endTime)) {
-      //val bin = (clock.getMillis / 3600000L) * 3600L
-      //if (clock.isAfter(startTime)) bins.put(bin, if (bins.contains(bin)) bins(bin) + 1 else 1)
 
       if (realTime) {
         val now = new DateTime()
@@ -189,18 +188,17 @@ object Main extends App {
 
       showProgress(clock, users.length, events)
       val u = users.dequeue()
-      val prAttrition = nUsers * Conf.attritionRate() * (endTime.getMillis - startTime.getMillis / Constants.SECONDS_PER_YEAR)
+      val prAttrition = nUsers * ConfFromOptions.attritionRate() *
+        (endTime.getMillis - startTime.getMillis / Constants.SECONDS_PER_YEAR)
       clock = u.session.nextEventTimeStamp.get
 
-      //if (clock.isAfter(startTime)) out.println(u.eventString)
       if (clock.isAfter(startTime)) u.writeEvent
       u.nextEvent(prAttrition)
       users += u
       events += 1
     }
-    System.err.println("")
 
-    //bins.foreach((p: (Long, Int)) => println(p._1 + "," + p._2))
+    System.err.println("")
     System.err.println()
 
     out.flush()
@@ -208,10 +206,10 @@ object Main extends App {
 
   }
 
-  if (Conf.compute())
+  if (ConfFromOptions.compute())
     trackListenCount.compute
   else
-    this.doStuff
+    this.generateEvents
 
 }
 

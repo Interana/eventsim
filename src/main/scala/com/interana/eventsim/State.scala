@@ -43,7 +43,7 @@ class State(val t:(String,String,Int,String,String)) {
 
   private def inRange(v: Double, s:(State,(Double,Double))) = v >= s._2._1 && v < s._2._2
 
-  def nextState(rng: RandomGenerator): Option[State] = {
+  def nextState(rng: RandomGenerator) = {
     val x = rng.nextDouble()
     val r = laterals.find(inRange(x,_))
     if (r.nonEmpty)
@@ -52,7 +52,7 @@ class State(val t:(String,String,Int,String,String)) {
       None
   }
 
-  def upgrade(rng: RandomGenerator): Option[State] = {
+  def upgrade(rng: RandomGenerator) = {
     val x = rng.nextDouble()
     val r = upgrades.find(inRange(x,_))
     if (r.nonEmpty)
@@ -61,7 +61,7 @@ class State(val t:(String,String,Int,String,String)) {
       None
   }
 
-  def downgrade(rng: RandomGenerator): Option[State] = {
+  def downgrade(rng: RandomGenerator) = {
     val x = rng.nextDouble()
     val r = downgrades.find(inRange(x,_))
     if (r.nonEmpty)

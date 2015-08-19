@@ -11,6 +11,7 @@ import scala.io.Source
 /**
  * Created by jadler on 10/7/14.
  */
+
 object RandomSongGenerator extends WeightedRandomThingGenerator[String] {
   System.err.println("Loading song file...")
   // val s = Source.fromFile("data/listen_counts.txt","ISO-8859-1")
@@ -32,12 +33,12 @@ object RandomSongGenerator extends WeightedRandomThingGenerator[String] {
       val artist = fields(1)
       val songName = fields(2)
       val duration = {
-        val d = fields(3); if (d != "") d.toDouble else 180.0
+        val d = fields(3)
+        if (d != "") d.toDouble else 180.0
       }
       val count = fields(4).toInt
       trackIdMap.put(trackId,(artist,songName,duration,count))
       this.add(trackId, count)
-      //this.add(trackId, artist, songName, duration), count)
     } catch {
       case e: NumberFormatException => {
         println("\n" + ll + "\n")
@@ -49,7 +50,7 @@ object RandomSongGenerator extends WeightedRandomThingGenerator[String] {
   s.close()
 
   System.err.println("Loading similar song file...")
-  var similarSongs = new mutable.HashMap[String, WeightedRandomThingGenerator[String]]()
+  val similarSongs = new mutable.HashMap[String, WeightedRandomThingGenerator[String]]()
 
   try {
     val ssFis = new FileInputStream("data/similar_songs.csv.gz")
