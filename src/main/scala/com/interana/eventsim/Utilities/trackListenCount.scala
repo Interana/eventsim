@@ -7,9 +7,9 @@ import scala.io.Source
 /**
  * Created by jadler on 10/7/14.
  */
-object trackListenCount  {
+object TrackListenCount  {
 
-  def compute = {
+  def compute() = {
 
     // metadata format
     // song analysis (should be 31)
