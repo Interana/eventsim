@@ -9,9 +9,6 @@ import sys.process._
 
 import com.fasterxml.jackson.core.{TreeNode, JsonParser, JsonFactory}
 
-/**
- * Created by jadler on 8/19/15.
- */
 object SimilarSongParser {
 
 
@@ -46,7 +43,6 @@ object SimilarSongParser {
     if (!testFolder.exists()) {
       val result = "unzip " + testArchive + " -d " + testFolder !
     }
-
     val fileOutputStream = new FileOutputStream("data/similar_songs.csv.gz")
     val gzipOutputStream = new GZIPOutputStream(fileOutputStream)
     val out = new PrintWriter(gzipOutputStream)

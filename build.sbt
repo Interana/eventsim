@@ -4,8 +4,6 @@ version := "1.0"
 
 libraryDependencies += "org.apache.commons" % "commons-math3" % "3.5"
 
-// libraryDependencies += "joda-time" % "joda-time" % "2.8.2"
-
 libraryDependencies += "de.jollyday" % "jollyday" % "0.5.1"
 
 libraryDependencies += "org.rogach" %% "scallop" % "0.9.5"

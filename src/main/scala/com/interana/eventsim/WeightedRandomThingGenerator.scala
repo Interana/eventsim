@@ -3,7 +3,6 @@ package com.interana.eventsim
 import scala.collection.mutable.ArrayBuffer
 
 /**
- * Created by jadler on 9/2/14.
  * Class to randomly return a thing from a (weighted) list of things
  */
 

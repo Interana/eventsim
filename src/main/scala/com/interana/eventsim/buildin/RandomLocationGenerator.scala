@@ -7,6 +7,7 @@ import scala.io.Source
 /**
  * Randomly generates locations
  */
+
 object RandomLocationGenerator extends WeightedRandomThingGenerator[String] {
 
   val s = Source.fromFile("data/CBSA-EST2013-alldata.csv","ISO-8859-1")

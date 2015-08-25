@@ -4,9 +4,6 @@ import com.interana.eventsim.WeightedRandomThingGenerator
 
 import scala.io.Source
 
-/**
- *  Randomly generates first names
- */
 object RandomFirstNameGenerator extends WeightedRandomThingGenerator[(String,String)] {
 
   val s = Source.fromFile("data/yob1990.txt","ISO-8859-1")

@@ -5,10 +5,7 @@ import com.interana.eventsim.WeightedRandomThingGenerator
 import scala.io.Source
 
 /**
- * Created by jadler on 9/5/14.
- *
  * Data from http://techblog.willshouse.com/2012/01/03/most-common-user-agents/
- *
  */
 object RandomUserAgentGenerator extends WeightedRandomThingGenerator[(String,String,String)] {
 

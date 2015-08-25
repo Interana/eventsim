@@ -7,10 +7,7 @@ import com.interana.eventsim.buildin.RandomSongGenerator
 import com.interana.eventsim.config.ConfigFromFile
 
 /**
- * Created by jadler on 9/4/14.
- *
  * Object to capture session related calculations and properties
- *
  */
 class Session(var nextEventTimeStamp: Option[LocalDateTime],
               val alpha: Double, // expected request inter-arrival time

@@ -6,10 +6,6 @@ import kafka.producer.{KeyedMessage, Producer}
 
 import scala.collection.mutable.ArrayBuffer
 
-/**
- * Created by jadler on 7/7/15.
- */
-
 class KafkaOutputStream(val producer: Producer[Array[Byte],Array[Byte]], val topic: String) extends OutputStream {
 
   val buffer = new ArrayBuffer[Byte](4096)

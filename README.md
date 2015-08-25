@@ -172,19 +172,53 @@ and help you remember the details of the data
 * Do not generate data for different time periods. The generator doesn't generate full sessions if they cross the start
 and end dates; you will find some incomplete data between files
 
-More tricks
-===========
+A Cool Example
+==============
 
-Some more ideas on how to use the simulator
+To simulate A/B tests, create multiple data sets for the same time period with different sets of member ids, different
+tags, and different  parameters for alpha, beta, transition probabilities, or growth rates. For example, you can
+geneate two files of about 5000 users with different characteristics with two commands like this:
 
-* To simulate A/B tests, crate multiple data sets for the same time period with different sets of member ids, different
-tags, and different  parameters for alpha, beta, transition probabilities, or growth rates.
+        $ bin/eventsim --config examples/example-config.json --tag control -n 5000 \
+        --start-time "2015-06-01T00:00:00" --end-time "2015-09-01T00:00:00" \
+        --growth-rate 0.25 --userid 1 --randomseed 1 control.data.json
+        Loading song file...
+        385000	...done loading song file. 385252 tracks loaded.
+        Loading similar song file...
+        Could not load similar song file (don't worry if it's missing)
+
+        Initial number of users: 5000, Final number of users: 5335
+        Start: 2015-06-01T00:00, End: 2015-09-01T00:00
+        Starting to generate events.
+        Damping=0.09375, Weekend-Damping=0.5
+        Now: 2015-08-31T15:38:02, Events:1430000, Rate: 147058 eps
+
+        $ bin/eventsim --config examples/example-config.json --tag test -n 5000 \
+        --start-time "2015-06-01T00:00:00" --end-time "2015-09-01T00:00:00" \
+        --growth-rate 0.25 --userid 5336 --randomseed 2 test.data.json
+        Loading song file...
+        385000	...done loading song file. 385252 tracks loaded.
+        Loading similar song file...
+        Could not load similar song file (don't worry if it's missing)
+
+        Initial number of users: 5000, Final number of users: 5339
+        Start: 2015-06-01T00:00, End: 2015-09-01T00:00
+        Starting to generate events.
+        Damping=0.09375, Weekend-Damping=0.5
+        Now: 2015-08-31T19:37:45, Events:1440000, Rate: 121951 eps
+
+
 
 Future Work
 ===========
 
 We haven't made the generator multi-threaded yet, but there isn't a good reason that we can't do that. (The only
 state that needs to be shared between threads is the priority queue, and access to that can be easily controlled).
+
+License
+=======
+We picked the MIT license (see the file LICENSE.txt) for this project. Please follow the license, but please
+send us bug fixes and enhancements.
 
 About the source data
 =====================
@@ -209,3 +243,25 @@ took the top 1000 names for each sex from this site.
 Location names are from the Census Bureau (see https://www.census.gov/popest/data/datasets.html).
 
 User agents are from http://techblog.willshouse.com/2012/01/03/most-common-user-agents/
+
+For the real novice
+===================
+
+If you aren't familiar with the Java toolkit (and Scala), here's a few commands to get your started.
+
+On a Mac, you'll need to install Java 8 and Scala. I use Homebrew for package management, so I can just
+install it with this command:
+
+    $ brew install scala
+
+On Linux (specifically Ubuntu), it's a little more complicated. Here's what works for me:
+
+    $ echo "deb http://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
+    $ sudo apt-get update
+    $ sudo apt-get install openjdk-8-jdk scala sbt
+
+To build the executable, run
+
+    $ sbt assembly
+    $ # make sure the script is executable
+    $ chmod +x bin/eventsim

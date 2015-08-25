@@ -5,7 +5,6 @@ import com.interana.eventsim.WeightedRandomThingGenerator
 import scala.io.Source
 
 /**
- * Created by jadler on 9/4/14.
  * Data originally from http://www.census.gov/genealogy/www/data/2000surnames/index.html
  */
 object RandomLastNameGenerator extends WeightedRandomThingGenerator[String] {

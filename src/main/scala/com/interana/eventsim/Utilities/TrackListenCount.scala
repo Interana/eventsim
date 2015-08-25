@@ -4,9 +4,6 @@ import java.io.PrintWriter
 
 import scala.io.Source
 
-/**
- * Created by jadler on 10/7/14.
- */
 object TrackListenCount  {
 
   def compute() = {

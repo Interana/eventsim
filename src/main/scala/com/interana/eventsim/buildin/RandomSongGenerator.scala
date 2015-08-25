@@ -8,10 +8,6 @@ import com.interana.eventsim.WeightedRandomThingGenerator
 import scala.collection.mutable
 import scala.io.Source
 
-/**
- * Created by jadler on 10/7/14.
- */
-
 object RandomSongGenerator extends WeightedRandomThingGenerator[String] {
   System.err.println("Loading song file...")
   // val s = Source.fromFile("data/listen_counts.txt","ISO-8859-1")

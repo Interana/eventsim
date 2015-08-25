@@ -3,10 +3,7 @@ package com.interana.eventsim
 import org.apache.commons.math3.random.RandomGenerator
 
 /**
- * Created by jadler on 8/29/14.
- *
  * Models a single state and transitions to other states
- *
  */
 
 class State(val t:(String,String,Int,String,String)) {

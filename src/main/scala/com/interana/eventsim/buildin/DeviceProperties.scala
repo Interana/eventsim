@@ -1,8 +1,5 @@
 package com.interana.eventsim.buildin
 
-/**
- * Created by jadler on 9/16/14.
- */
 object DeviceProperties {
 
   def randomProps =

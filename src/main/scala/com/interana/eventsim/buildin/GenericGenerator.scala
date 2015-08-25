@@ -4,9 +4,6 @@ import com.interana.eventsim.WeightedRandomThingGenerator
 
 import scala.io.Source
 
-/**
- * Generic class for generating a set of random things
- */
 class GenericGenerator(fn: String, sep: String, thingColumn: Int, weightColumn: Int, header: Boolean)
   extends WeightedRandomThingGenerator[String] {
 
