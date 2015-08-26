@@ -1,9 +1,15 @@
 eventsim
 ========
 
-Eventsim is a program  that generates event data for testing and demos. It's written in Scala, because we are
+Eventsim is a program that generates event data for testing and demos. It's written in Scala, because we are
 big data hipsters (at least sometimes). It's designed to replicate page requests for a fake music
-web site (picture something like Spotify); the results look like real use data, but are totally fake.
+web site (picture something like Spotify); the results look like real use data, but are totally fake. You can
+configure the program to create as much data as you want: data for just a few users for a few hours, or data for a
+huge number of users of users over many years. You can write the data to files, or pipe it out to Apache Kafka.
+
+You can use the fake data for product development, correctness testing, demos, performance testing, training, or in any
+other place where a stream of real looking data is useful. You probably shouldn't use this data to research machine
+learning algorithms, and definitely shouldn't use it to understand how real people behave.
 
 Statistical Model
 =================
@@ -144,7 +150,7 @@ Parameters can be specified in three ways: you can accept the default value, you
 or you can specify them on the command line. Config file values override defaults; command line options override
 everything.
 
-Example for 2.5 M events:
+Example for about 2.5 M events (1000 users for a year, growing at 1% annually):
 
     $ bin/eventsim -c "examples/site.json" --from 365 --nusers 1000 --growth-rate 0.01 data/fake.json
     Initial number of users: 1000, Final number of users: 1010
@@ -152,7 +158,7 @@ Example for 2.5 M events:
     Damping=0.0625, Weekend-Damping=0.5
     Start: 2013-10-06T06:27:10, End: 2014-10-05T06:27:10, Now: 2014-10-05T06:27:07, Events:2468822
 
-Example for more events:
+Example for more events (30,000 users for a year, growing at 30% annually):
 
     $ bin/eventsim -c "examples/site.json" --from 365 --nusers 30000 --growth-rate 0.30 data/fake.json
 
@@ -162,12 +168,12 @@ You can run multiple instances of this application simultaneously if you need to
 To do this, we recommend the following strategy:
 
 * Use a different random seed for each instance. This assures that each instance will produce different data.
-* Use a different first user id for each instance. This assures that each instance will produce data with different
-(and not overlapping) user ids.
+* Use a different starting user id for each instance (and make sure the ranges don't overlap). This assures that each
+instance will produce data with different user ids.
 * Create a set of configuration files, one for each instance of eventsim. This will help you re-create your data,
 and help you remember the details of the data
 * Do not generate data for different time periods. The generator doesn't generate full sessions if they cross the start
-and end dates; you will find some incomplete data between files
+and end dates; you will find some incomplete data between files.
 
 A Cool Example
 ==============
@@ -204,8 +210,6 @@ geneate two files of about 5000 users with different characteristics with two co
         Damping=0.09375, Weekend-Damping=0.5
         Now: 2015-08-31T19:37:45, Events:1440000, Rate: 121951 eps
 
-
-
 Issues and Future Work
 ======================
 
@@ -221,7 +225,7 @@ the simulation more abstract, so that different configuration files could be use
 
 License
 =======
-We picked the MIT license (see the file LICENSE.txt) for this project.
+We have adopted the MIT license (see the file LICENSE.txt) for this project.
 
 About the source data
 =====================
