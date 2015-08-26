@@ -1,9 +1,9 @@
 eventsim
 ========
 
-Eventsim is a program  that generates event data for testing and demos. It's written in Scala (which provides
-a good balance of scalability, brevity, and clarity). It's designed to replicate page requests for a fake music
-web site (picture something like Spotify); it's designed to look like real use data, but be totally fake.
+Eventsim is a program  that generates event data for testing and demos. It's written in Scala, because we are
+big data hipsters (at least sometimes). It's designed to replicate page requests for a fake music
+web site (picture something like Spotify); the results look like real use data, but are totally fake.
 
 Statistical Model
 =================
@@ -17,7 +17,7 @@ To make this work, I did the following:
 
 * If you set the "damping" factors to zero, then users randomly arrive at the site according to a Poisson (memoryless)
 process, but with a minimum gap of 30 minutes between sessions.
-* The time between events is given by a log-normal disribution
+* The time between events is given by a log-normal distribution
 * Once a sessions has started, the user will randomly traverse a set of states until the session ends. The probability
 of each state transition (including end of session) depends on the current state.
 * On average, users will behave the same way in a session, regardless of the time of day or day of week
@@ -209,16 +209,20 @@ geneate two files of about 5000 users with different characteristics with two co
 
 
 
-Future Work
-===========
+Issues and Future Work
+======================
 
-We haven't made the generator multi-threaded yet, but there isn't a good reason that we can't do that. (The only
+Want to pitch in and help? Here are some ideas on ways to make this better?
+
+* We haven't made the generator multi-threaded yet, but there isn't a good reason that we can't do that. (The only
 state that needs to be shared between threads is the priority queue, and access to that can be easily controlled).
+* The models to generate data could also use more work. We made some rough guesses based on experience, but aren't
+sure how well they reflect reality. (In particular, the sine curve for cycles bugs me.)
+* This is written a novice Scala programmer. An expert could improve the code quality.
 
 License
 =======
-We picked the MIT license (see the file LICENSE.txt) for this project. Please follow the license, but please
-send us bug fixes and enhancements.
+We picked the MIT license (see the file LICENSE.txt) for this project.
 
 About the source data
 =====================
