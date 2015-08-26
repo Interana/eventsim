@@ -36,29 +36,8 @@ pseudo-random number generator: the generator is deterministic, but looks random
 PRNG because it's fast, and well respected.)
 
 You need to specify a configuration file (a sample is included in `examples/example-site.json`). This file
-specifies how sessions are generated, and how the fake website works. In this file you can specify several parameters:
-
-* Alpha. This is the expected number of seconds between events for a user. This is randomly generated from a lognormal
-distrbution
-* Beta. This is the expected session interarrival time (in seconds). This is thirty minutes plus a randomly selected
-value from an exponential distribution
-* Damping. This is the damping factor for daily cycles (larger values yield stronger cycles, smaller yield milder)
-* Weekend Damping. This controls when and how quickly weekend traffic falls off
-* Seed. Seed for the random number generator.
-
-You also specify the event state machine. Each state includes a page, an HTTP status code, a user level, and an
-authentication status. Status should be used to describe a user's status: unregistered, logged in, logged out,
-cancelled, etc. Pages are used to describe a user's page. Here is how you specify the state machine:
-
-* Transitions. Describe the pair of page and status before and after each transition, and the
-probability of the transition.
-* New user. Describes the page and status for each new user (and probability of arriving for the
-first time with one of those states).
-* New session. Describes that page and status for each new session.
-* Show user details. For each status, states whether or not users are shown in the generated event log.
-
-When you run the simulator, you specify the mean values for alpha and beta and the simulator picks values for specific
-users.
+specifies how sessions are generated and how the fake website works. The simulator will also load in a set of data
+files that describe distributions for different parameters (like places, song names, and user agents).
 
 The simulator works by creating a priority queue of user sessions, ordered by the timestamp of the next event in
 each session. The simulator picks each session off the queue, outputs the details of the event, then determines the
@@ -76,6 +55,45 @@ submitting a form then being redirected to a new page).
 
 By the way: the current version of the simulator is hard-coded for a music web site. You can modify it to work for
 other types of sites, but doing so will probably require modifications to the code (and not just to the config files).
+
+
+Config File
+===========
+Take a look at the sample config file. It's a JSON file, with key-value pairs.  Here is an explanation of the values
+(many of which match command line options):
+
+* `seed` For the pseudo-random number generator. Changing this value will change the output (all other parameters
+being equal).
+* `alpha` This is the expected number of seconds between events for a user. This is randomly generated from a lognormal
+distrbution
+* `beta` This is the expected session interarrival time (in seconds). This is thirty minutes plus a randomly selected
+value from an exponential distribution
+* `damping` Controls the depth of daily cycles (larger values yield stronger cycles, smaller yield milder)
+* `weekend-damping` Controls the difference between weekday and weekend traffic volume
+* `weekend-damping-offset` Controls when the weekend/holiday starts (relative to midnight), in minutes
+* `weeeknd-damping-scale` Controls how long traffic tapering lasts, in minutes
+* `session-gap` Minimum time between sessions, in seconds
+* `start-date` Start date for data (in ISO8601 format)
+* `end-date` End date for data (in ISO8601 format)
+* `n-users` Number of users at start-date
+* `first-user-id` User id assigned to first user (these are assigned sequentially)
+* `growth-rate` Annual growth rate for users
+* `tag` Tag added to each line of the output
+
+You also specify the event state machine. Each state includes a page, an HTTP status code, a user level, and an
+authentication status. Status should be used to describe a user's status: unregistered, logged in, logged out,
+cancelled, etc. Pages are used to describe a user's page. Here is how you specify the state machine:
+
+* Transitions. Describe the pair of page and status before and after each transition, and the
+probability of the transition.
+* New user. Describes the page and status for each new user (and probability of arriving for the
+first time with one of those states).
+* New session. Describes that page and status for each new session.
+* Show user details. For each status, states whether or not users are shown in the generated event log.
+
+When you run the simulator, you specify the mean values for alpha and beta and the simulator picks values for specific
+users.
+
 
 Usage
 =====
@@ -138,27 +156,6 @@ Example for more events:
 
     $ bin/eventsim -c "examples/site.json" --from 365 --nusers 30000 --growth-rate 0.30 data/fake.json
 
-Config File
-===========
-Take a look at the sample config file. It's a JSON file, with key-value pairs.  Here is an explanation of the values
-(many of which match command line options):
-
-* `seed` For the pseudo-random number generator. Changing this value will change the output (all other parameters
-being equal).
-* `alpha` See above
-* `beta` See above
-* `damping` Controls the depth of daily cycles
-* `weekend-damping` Controls the difference between weekday and weekend traffic volume
-* `weekend-damping-offset` Controls when the weekend/holiday starts (relative to midnight), in minutes
-* `weeeknd-damping-scale` Controls how long traffic tapering lasts, in minutes
-* `session-gap` Minimum time between sessions, in seconds
-* `start-date` Start date for data (in ISO8601 format)
-* `end-date` End date for data (in ISO8601 format)
-* `n-users` Number of users at start-date
-* `first-user-id` User id assigned to first user (these are assigned sequentially)
-* `growth-rate` Annual growth rate for users
-* `tag` Tag added to each line of the output
-
 Building huge data sets in parallel
 ===================================
 You can run multiple instances of this application simultaneously if you need to generate a lot of data very quickly.
@@ -218,6 +215,8 @@ Want to pitch in and help? Here are some ideas on ways to make this better?
 state that needs to be shared between threads is the priority queue, and access to that can be easily controlled).
 * The models to generate data could also use more work. We made some rough guesses based on experience, but aren't
 sure how well they reflect reality. (In particular, the sine curve for cycles bugs me.)
+* The simulator is tied closely to simulating a web site, specifically a music web site. It would be great to make
+the simulation more abstract, so that different configuration files could be used for dramatically different use cases.
 * This is written a novice Scala programmer. An expert could improve the code quality.
 
 License
