@@ -38,10 +38,9 @@ How the simulation works
 
 When you run the simulator, it starts by generating a set of users with randomly picked properties. This includes
 attributes like names and location as well as usage characteristics, like user engagement. Eventsim uses a
-pseudo-random number generator: the generator is deterministic, but looks random. (We picked a Mersenne Twister as the
-PRNG because it's fast, and well respected.)
+pseudo-random number generator: the generator is deterministic, but looks random.
 
-You need to specify a configuration file (a sample is included in `examples/example-site.json`). This file
+You need to specify a configuration file (samples are included in `examples`). This file
 specifies how sessions are generated and how the fake website works. The simulator will also load in a set of data
 files that describe distributions for different parameters (like places, song names, and user agents).
 
@@ -59,9 +58,13 @@ event. But there are two exceptions: "nextSong" events and redirects. The next s
 after the duration of the current song. Redirects occur at a fixed time afterwards (we did this to model the action of
 submitting a form then being redirected to a new page).
 
+By default, song titles are picked randomly based on how popular they are. But optionally, the simulator can use
+data on similar songs to pick sequences of similar songs. (To do this, you need the similar songs data file. That file
+was too big to include, but we included the utility to generate it. Run eventsim with the `generate-similars`
+option to create it.)
+
 By the way: the current version of the simulator is hard-coded for a music web site. You can modify it to work for
 other types of sites, but doing so will probably require modifications to the code (and not just to the config files).
-
 
 Config File
 ===========
@@ -196,19 +199,19 @@ geneate two files of about 5000 users with different characteristics with two co
         Damping=0.09375, Weekend-Damping=0.5
         Now: 2015-08-31T15:38:02, Events:1430000, Rate: 147058 eps
 
-        $ bin/eventsim --config examples/example-config.json --tag test -n 5000 \
-        --start-time "2015-06-01T00:00:00" --end-time "2015-09-01T00:00:00" \
-        --growth-rate 0.25 --userid 5336 --randomseed 2 test.data.json
+        $bin/eventsim --config examples/alt-example-config.json --tag test -n 5000 \
+        > --start-time "2015-06-01T00:00:00" --end-time "2015-09-01T00:00:00" \
+        > --growth-rate 0.25 --userid 5336 --randomseed 2 test.data.json
         Loading song file...
         385000	...done loading song file. 385252 tracks loaded.
         Loading similar song file...
         Could not load similar song file (don't worry if it's missing)
 
-        Initial number of users: 5000, Final number of users: 5339
+        Initial number of users: 5000, Final number of users: 5352
         Start: 2015-06-01T00:00, End: 2015-09-01T00:00
         Starting to generate events.
-        Damping=0.09375, Weekend-Damping=0.5
-        Now: 2015-08-31T19:37:45, Events:1440000, Rate: 121951 eps
+        Damping=0.09425, Weekend-Damping=0.53
+        Now: 2015-08-31T20:25:04, Events:1870000, Rate: 114942 eps
 
 Issues and Future Work
 ======================

@@ -100,7 +100,6 @@ class User(val alpha: Double,
     writer.writeNumberField("itemInSession", session.itemInSession)
     if (showUserDetails) {
       props.foreach((p: (String, Any)) => {
-        //writer.writeObjectField(p._1, p._2)
         p._2 match {
           case _: Long => writer.writeNumberField(p._1, p._2.asInstanceOf[Long])
           case _: Int => writer.writeNumberField(p._1, p._2.asInstanceOf[Int])
@@ -121,7 +120,7 @@ class User(val alpha: Double,
     writer.flush()
   }
 
-  def tsToString(ts: LocalDateTime) = ts.toString(/*ISODateTimeFormat.dateTime()*/)
+  def tsToString(ts: LocalDateTime) = ts.toString()
 
   def nextEventTimeStampString =
     tsToString(this.session.nextEventTimeStamp.get)
