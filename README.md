@@ -224,7 +224,7 @@ state that needs to be shared between threads is the priority queue, and access 
 sure how well they reflect reality. (In particular, the sine curve for cycles bugs me.)
 * The simulator is tied closely to simulating a web site, specifically a music web site. It would be great to make
 the simulation more abstract, so that different configuration files could be used for dramatically different use cases.
-* This is written a novice Scala programmer. An expert could improve the code quality.
+* This is written by a novice Scala programmer. An expert could improve the code quality.
 
 License
 =======
