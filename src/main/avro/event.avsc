@@ -1,6 +1,6 @@
 {"namespace" : "com.interana.eventsim",
   "type" : "record",
-  "name" : "event",
+  "name" : "Event",
   "fields" : [
     {"name" : "ts", "type" : "long"},
     {"name" : "userId", "type" : ["null","long"]},
