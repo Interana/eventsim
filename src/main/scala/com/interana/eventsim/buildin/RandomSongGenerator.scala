@@ -17,7 +17,7 @@ object RandomSongGenerator extends WeightedRandomThingGenerator[String] {
 
   val listenLines = s.getLines()
 
-  val trackIdMap = new mutable.HashMap[String,(String,String,Double,Int)]()
+  val trackIdMap = new mutable.HashMap[String,(String,String,Float,Int)]()
   var i = 0
   for (ll <- listenLines) {
     if ((i % 1000) == 0)
@@ -30,7 +30,7 @@ object RandomSongGenerator extends WeightedRandomThingGenerator[String] {
       val songName = fields(2)
       val duration = {
         val d = fields(3)
-        if (d != "") d.toDouble else 180.0
+        if (d != "") d.toFloat else 180.0.toFloat
       }
       val count = fields(4).toInt
       trackIdMap.put(trackId,(artist,songName,duration,count))
@@ -86,7 +86,7 @@ object RandomSongGenerator extends WeightedRandomThingGenerator[String] {
   }
 
 
-  def nextSong(lastTrackId: String): (String,String,String,Double) = {
+  def nextSong(lastTrackId: String): (String,String,String,Float) = {
       val nextTrackId =
         if (!similarSongs.isEmpty && similarSongs.contains(lastTrackId)) {
           similarSongs(lastTrackId).randomThing
@@ -97,6 +97,6 @@ object RandomSongGenerator extends WeightedRandomThingGenerator[String] {
       (nextTrackId,song._1,song._2,song._3)
     }
 
-  def nextSong(): (String, String, String, Double) = nextSong("")
+  def nextSong(): (String, String, String, Float) = nextSong("")
 
 }

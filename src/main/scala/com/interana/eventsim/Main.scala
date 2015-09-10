@@ -78,6 +78,9 @@ object Main extends App {
     val realTime = toggle("continuous", default = Some(false),
       descrYes = "continuous output", descrNo = "run all at once")
 
+    val useAvro = toggle("useAvro", default = Some(false),
+      descrYes = "output data as Avro", descrNo = "output data as JSON")
+
   }
 
   val startTime = if (ConfFromOptions.startTimeArg.isSupplied) {
@@ -124,6 +127,8 @@ object Main extends App {
   } else None
 
   val realTime = ConfFromOptions.realTime.get.get
+
+  val useAvro = ConfFromOptions.useAvro.get.get
 
   def generateEvents() = {
 

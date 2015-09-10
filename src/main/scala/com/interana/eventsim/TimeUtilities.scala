@@ -6,6 +6,7 @@ import java.time.{DayOfWeek, Duration, LocalDateTime, LocalDate}
 import com.interana.eventsim.Constants._
 import com.interana.eventsim.config.ConfigFromFile
 import de.jollyday.HolidayManager
+import org.apache.commons.math3.distribution.ExponentialDistribution
 import org.apache.commons.math3.random.MersenneTwister
 
 object TimeUtilities {
@@ -30,6 +31,7 @@ object TimeUtilities {
   // Y = − (1/λ) ln(X) has an exponential distribution with (rate) parameter λ
   // mu = (1 / lambda)
 
+  // TODO: change this to use org.apache.commons.math3.distribution.ExponentialDistribution
   def exponentialRandomValue(mu: Double) = -mu * Math.log(rng.nextDouble())
 
 
