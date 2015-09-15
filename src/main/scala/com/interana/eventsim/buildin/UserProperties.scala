@@ -22,7 +22,8 @@ object UserProperties {
       "firstName" -> firstNameAndGender._1,
       "gender" -> firstNameAndGender._2,
       "registration" -> registrationTime.toInstant(ZoneOffset.UTC).toEpochMilli,
-      "location" -> location
+      "location" -> location,
+      "userAgent" -> RandomUserAgentGenerator.randomThing._1
     )
   }
 
