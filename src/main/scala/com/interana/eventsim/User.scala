@@ -61,6 +61,7 @@ class User(val alpha: Double,
     writer.setStatus(session.currentState.status)
     writer.setLevel(session.currentState.level)
     writer.setItemInSession(session.itemInSession)
+    writer.setDeviceDetails(device)
     if (showUserDetails) {
       writer.setUserDetails(props)
       if (Main.tag.isDefined)

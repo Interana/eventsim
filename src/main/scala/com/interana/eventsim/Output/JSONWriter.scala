@@ -31,6 +31,15 @@ class JSONWriter(val stream: OutputStream) extends Object with EventWriter {
         case _: Float => generator.writeNumberField(p._1, p._2.asInstanceOf[Float])
         case _: String => generator.writeStringField(p._1, p._2.asInstanceOf[String])
       }})
+  def setDeviceDetails(m: Map[String,Any]) =
+    m.foreach((p: (String, Any)) => {
+      p._2 match {
+        case _: Long => generator.writeNumberField(p._1, p._2.asInstanceOf[Long])
+        case _: Int => generator.writeNumberField(p._1, p._2.asInstanceOf[Int])
+        case _: Double => generator.writeNumberField(p._1, p._2.asInstanceOf[Double])
+        case _: Float => generator.writeNumberField(p._1, p._2.asInstanceOf[Float])
+        case _: String => generator.writeStringField(p._1, p._2.asInstanceOf[String])
+      }})
   def setTag(s: String) = generator.writeStringField("tag", s)
   def start = generator.writeStartObject()
   def end() = {

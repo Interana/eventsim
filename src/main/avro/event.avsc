@@ -13,6 +13,8 @@
     {"name" : "itemInSession", "type" : "int"},
     {"name" : "userDetails",
      "type": [{"type" : "map", "values": ["string", "long"]}, "null"]},
+    {"name" : "deviceDetails",
+      "type": [{"type" : "map", "values": ["string", "long"]}, "null"]},
     {"name" : "songProperties", "type" : [
       "null",
       {

@@ -37,4 +37,6 @@ class AvroWriter(val stream: OutputStream) extends Object with EventWriter {
     dataFileWriter.append(e)
   }
 
+  def setDeviceDetails(m: Map[String, Any]): Unit =
+    eventBuilder.setDeviceDetails(m.asInstanceOf[java.util.Map[CharSequence,AnyRef]])
 }

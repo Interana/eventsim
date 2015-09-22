@@ -14,6 +14,7 @@ trait EventWriter {
   def setTitle(s: String)
   def setDuration(d: Float)
   def setUserDetails(m: Map[String,Any])
+  def setDeviceDetails(m: Map[String,Any])
   def setTag(s: String)
   def start()
   def end()
