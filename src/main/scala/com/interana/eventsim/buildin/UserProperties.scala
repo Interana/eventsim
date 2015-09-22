@@ -22,7 +22,11 @@ object UserProperties {
       "firstName" -> firstNameAndGender._1,
       "gender" -> firstNameAndGender._2,
       "registration" -> registrationTime.toInstant(ZoneOffset.UTC).toEpochMilli,
-      "location" -> location
+      "zip" -> location._1,
+      "city" -> location._2,
+      "state" -> location._3,
+      "lat" -> location._4,
+      "lon" -> location._5
     )
   }
 
