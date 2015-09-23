@@ -203,7 +203,7 @@ object Main extends App {
         val now = LocalDateTime.now()
         val dif = Duration.between(clock, now)
         if (dif.isNegative)
-          Thread.sleep(-dif.getSeconds)
+          Thread.sleep(dif.abs.toMillis())
       }
 
       showProgress(clock, users.length, events)

@@ -39,7 +39,6 @@ object RandomLocationGenerator extends WeightedRandomThingGenerator[(String, Str
       val zip = e(1)
       val city = e(2)
       val state = e(4)
-      // System.err.println("adding " + zip + " -> " + city + ", " + state)
       zip -> (city, state)
     })(collection.breakOut)
 
@@ -51,7 +50,6 @@ object RandomLocationGenerator extends WeightedRandomThingGenerator[(String, Str
     val lon = e(8).toDouble
     if (nameMap.contains(zip)) {
         val (city, state) = nameMap(zip)
-        // System.err.println("adding " + zip + ", " + city + ", " + state + ", " + lat + ", " + lon + ", " + pop)
         this.add((zip, city, state, lat, lon), pop)
       }
     }

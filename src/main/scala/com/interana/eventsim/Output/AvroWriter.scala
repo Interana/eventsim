@@ -25,7 +25,11 @@ class AvroWriter(val stream: OutputStream) extends Object with EventWriter {
   def setArtist(s: String) = songBuilder.setArtist(s)
   def setTitle(s: String) = songBuilder.setTitle(s)
   def setDuration(d: Float) = songBuilder.setDuration(d)
-  def setUserDetails(m: Map[String,Any]) = eventBuilder.setUserDetails(m.asInstanceOf[java.util.Map[CharSequence,AnyRef]])
+  def setUserDetails(m: Map[String,Any]): Unit =
+    eventBuilder.setUserDetails(m.asInstanceOf[java.util.Map[CharSequence,AnyRef]])
+  def setDeviceDetails(m: Map[String, Any]): Unit =
+    eventBuilder.setDeviceDetails(m.asInstanceOf[java.util.Map[CharSequence,AnyRef]])
+
   def setTag(s: String) = eventBuilder.setTag(s)
   def start() = {
     eventBuilder = Event.newBuilder(eventBuilder)
@@ -37,6 +41,4 @@ class AvroWriter(val stream: OutputStream) extends Object with EventWriter {
     dataFileWriter.append(e)
   }
 
-  def setDeviceDetails(m: Map[String, Any]): Unit =
-    eventBuilder.setDeviceDetails(m.asInstanceOf[java.util.Map[CharSequence,AnyRef]])
 }
