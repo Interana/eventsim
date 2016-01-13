@@ -81,6 +81,7 @@ object ConfigFromFile {
 
     val s = Source.fromFile(fn)
     val rawContents = s.mkString
+
     val jsonContents = (scala.util.parsing.json.JSON.parseFull(rawContents) match {
       case e: Some[Any] => e.get
       case _ => throw new Exception("Could not parse the state file")

@@ -1,0 +1,17 @@
+{"namespace" : "io.confluent.eventsim",
+  "type" : "record",
+  "name" : "Auth",
+  "fields" : [
+    {"name" : "ts", "type" : "long"},
+    {"name" : "userId", "type" : ["null","long"]},
+    {"name" : "sessionId", "type" : "long"},
+    {"name" : "level", "type" : "string"},
+    {"name" : "itemInSession", "type" : "int"},
+    {"name" : "userDetails",
+     "type": [{"type" : "map", "values": ["string", "long"]}, "null"]},
+    {"name" : "deviceDetails",
+      "type": [{"type" : "map", "values": ["string", "long"]}, "null"]},
+    {"name": "tag", "type" : ["null", "string"]},
+    {"name": "success", "type" : "boolean"}
+  ]
+}

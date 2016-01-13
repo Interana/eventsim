@@ -1,6 +1,6 @@
-{"namespace" : "com.interana.eventsim",
+{"namespace" : "io.confluent.eventsim",
   "type" : "record",
-  "name" : "Event",
+  "name" : "PageView",
   "fields" : [
     {"name" : "ts", "type" : "long"},
     {"name" : "userId", "type" : ["null","long"]},
@@ -15,18 +15,7 @@
      "type": [{"type" : "map", "values": ["string", "long"]}, "null"]},
     {"name" : "deviceDetails",
       "type": [{"type" : "map", "values": ["string", "long"]}, "null"]},
-    {"name" : "songProperties", "type" : [
-      "null",
-      {
-        "type": "record",
-        "name": "song",
-        "fields" : [
-          {"name" : "artist", "type" : "string"},
-          {"name" : "title", "type" : "string"},
-          {"name" : "duration", "type" : "double"}
-        ]
-      }
-    ]},
+    {"name" : "songProperties", "type" : ["null", "song"]},
     {"name": "tag", "type" : ["null", "string"]}
   ]
 }

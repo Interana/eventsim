@@ -1,27 +1,22 @@
-package com.interana.eventsim.Output
+package com.interana.eventsim.events
 
-import java.io.OutputStream
+import java.io.ByteArrayOutputStream
 
-import com.fasterxml.jackson.core.{JsonFactory, JsonEncoding}
+import com.fasterxml.jackson.core.{JsonEncoding, JsonFactory}
 
-class JSONWriter(val stream: OutputStream) extends Object with EventWriter {
-  // use Jackson streaming to maximize efficiency
-  // (earlier versions used Scala's JSON generators, but they were slow)
+/**
+  * Created by jadler on 1/13/16.
+  */
+class JSONConstructor extends Object with Constructor {
   val jsonFactory = new JsonFactory()
   jsonFactory.setRootValueSeparator("")
-  val generator = jsonFactory.createGenerator(stream, JsonEncoding.UTF8)
+  val buffer = new ByteArrayOutputStream()
+  val generator = jsonFactory.createGenerator(buffer, JsonEncoding.UTF8)
   def setTs(n: Long) = generator.writeNumberField("ts", n)
   def setUserId(n: Long) = generator.writeNumberField("userId", n)
   def setSessionId(n: Long) = generator.writeNumberField("sessionId", n)
-  def setPage(s: String) = generator.writeStringField("page",s)
-  def setAuth(s: String) = generator.writeStringField("auth", s)
-  def setMethod(s: String) = generator.writeStringField("method", s)
-  def setStatus(i: Int) = generator.writeNumberField("status", i)
   def setLevel(s: String) = generator.writeStringField("level", s)
   def setItemInSession(i: Int) = generator.writeNumberField("itemInSession", i)
-  def setArtist(s: String) = generator.writeStringField("artist", s)
-  def setTitle(s: String) = generator.writeStringField("song", s)
-  def setDuration(f: Float) = generator.writeNumberField("duration", f)
   def setUserDetails(m: Map[String,Any]) =
     m.foreach((p: (String, Any)) => {
       p._2 match {
@@ -46,5 +41,8 @@ class JSONWriter(val stream: OutputStream) extends Object with EventWriter {
     generator.writeEndObject()
     generator.writeRaw('\n')
     generator.flush()
+    val ba = buffer.toByteArray
+    buffer.reset()
+    ba
   }
 }

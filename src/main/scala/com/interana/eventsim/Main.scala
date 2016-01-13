@@ -1,14 +1,11 @@
 package com.interana.eventsim
 
-import java.io.FileOutputStream
 import java.time.temporal.ChronoUnit
 import java.time.{Duration, LocalDateTime, ZoneOffset}
-import java.util.Properties
 
 import com.interana.eventsim.Utilities.{SimilarSongParser, TrackListenCount}
 import com.interana.eventsim.buildin.{DeviceProperties, UserProperties}
 import com.interana.eventsim.config.ConfigFromFile
-import kafka.producer.{Producer, ProducerConfig}
 import org.rogach.scallop.{ScallopOption, ScallopConf}
 
 import scala.collection.mutable
@@ -61,10 +58,8 @@ object Main extends App {
 
     val verbose = toggle("verbose", default = Some(false),
       descrYes = "verbose output (not implemented yet)", descrNo = "silent mode")
-    val outputFile: ScallopOption[String] = trailArg[String]("output-file", required = false, descr = "File name")
 
-    val kafkaTopic: ScallopOption[String] =
-      opt[String]("kafkaTopic", descr = "kafka topic", required = false)
+    val outputDir: ScallopOption[String] = trailArg[String]("output-dir", required = false, descr = "Directory for output files")
 
     val kafkaBrokerList: ScallopOption[String] =
       opt[String]("kafkaBrokerList", descr = "kafka broker list", required = false)
@@ -119,26 +114,11 @@ object Main extends App {
   else
     ConfigFromFile.growthRate
 
-  val kafkaProducer = if (ConfFromOptions.kafkaBrokerList.isDefined) {
-    val kafkaProperties = new Properties()
-    kafkaProperties.setProperty("metadata.broker.list", ConfFromOptions.kafkaBrokerList.get.get)
-    val producerConfig = new ProducerConfig(kafkaProperties)
-    new Some(new Producer[Array[Byte],Array[Byte]](producerConfig))
-  } else None
-
   val realTime = ConfFromOptions.realTime.get.get
 
   val useAvro = ConfFromOptions.useAvro.get.get
 
   def generateEvents() = {
-
-    val out = if (kafkaProducer.nonEmpty) {
-      new KafkaOutputStream(kafkaProducer.get, ConfFromOptions.kafkaTopic.get.get)
-    } else if (ConfFromOptions.outputFile.isSupplied) {
-      new FileOutputStream(ConfFromOptions.outputFile())
-    } else {
-      System.out
-    }
 
     (0 until nUsers).foreach((_) =>
       users += new User(
@@ -149,8 +129,7 @@ object Main extends App {
         ConfigFromFile.authGenerator.randomThing,
         UserProperties.randomProps,
         DeviceProperties.randomProps,
-        ConfigFromFile.levelGenerator.randomThing,
-        out
+        ConfigFromFile.levelGenerator.randomThing
       ))
 
     val growthRate = ConfigFromFile.growthRate.getOrElse(ConfFromOptions.growthRate.get.get)
@@ -167,8 +146,7 @@ object Main extends App {
           ConfigFromFile.newUserAuth,
           UserProperties.randomNewProps(current),
           DeviceProperties.randomProps,
-          ConfigFromFile.newUserLevel,
-          out
+          ConfigFromFile.newUserLevel
         )
         nUsers += 1
       }
@@ -212,7 +190,7 @@ object Main extends App {
         (endTime.toEpochSecond(ZoneOffset.UTC) - startTime.toEpochSecond(ZoneOffset.UTC) / Constants.SECONDS_PER_YEAR)
       clock = u.session.nextEventTimeStamp.get
 
-      if (clock.isAfter(startTime)) u.writeEvent()
+      if (clock.isAfter(startTime)) Output.writeEvents(u.session, u.device, u.userId, u.props)
       u.nextEvent(prAttrition)
       users += u
       events += 1
@@ -221,8 +199,7 @@ object Main extends App {
     System.err.println("")
     System.err.println()
 
-    out.flush()
-    out.close()
+    Output.flushAndClose()
 
   }
 

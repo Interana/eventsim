@@ -1,0 +1,28 @@
+{"namespace" : "io.confluent.eventsim",
+  "type" : "record",
+  "name" : "Listen",
+  "fields" : [
+    {"name" : "ts", "type" : "long"},
+    {"name" : "userId", "type" : ["null","long"]},
+    {"name" : "sessionId", "type" : "long"},
+    {"name" : "auth", "type" : "string"},
+    {"name" : "level", "type" : "string"},
+    {"name" : "itemInSession", "type" : "int"},
+    {"name" : "userDetails",
+     "type": [{"type" : "map", "values": ["string", "long"]}, "null"]},
+    {"name" : "deviceDetails",
+      "type": [{"type" : "map", "values": ["string", "long"]}, "null"]},
+    {"name" : "songProperties", "type" :
+      {
+        "type": "record",
+        "name": "song",
+        "fields" : [
+          {"name" : "artist", "type" : "string"},
+          {"name" : "title", "type" : "string"},
+          {"name" : "duration", "type" : "double"}
+        ]
+      }
+    },
+    {"name": "tag", "type" : ["null", "string"]}
+  ]
+}

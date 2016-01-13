@@ -20,6 +20,7 @@ class Session(var nextEventTimeStamp: Option[LocalDateTime],
   var itemInSession = 0
   var done = false
   var currentState:State = initialStates((auth, level)).randomThing
+  var previousState:Option[State] = None
   var currentSong:Option[(String,String,String,Float)] =
     if (currentState.page=="NextSong") Some(RandomSongGenerator.nextSong()) else None
   var currentSongEnd:Option[LocalDateTime] =
@@ -47,11 +48,13 @@ class Session(var nextEventTimeStamp: Option[LocalDateTime],
           currentSong = Some(RandomSongGenerator.nextSong(currentSong.get._1))
         }
         currentSongEnd = Some(nextEventTimeStamp.get.plusSeconds(currentSong.get._4.toInt))
+        previousState = Some(currentState)
         currentState = nextState.get
         itemInSession += 1
 
       case _ =>
         nextEventTimeStamp=Some(nextEventTimeStamp.get.plusSeconds(exponentialRandomValue(alpha).toInt))
+        previousState = Some(currentState)
         currentState = nextState.get
         itemInSession += 1
 
