@@ -1,7 +1,7 @@
 package io.confluent.eventsim.events.Listen
 
 
-import io.confluent.eventsim.{Listen, song}
+import io.confluent.eventsim.avro.{Listen, song}
 
 import scala.collection.JavaConversions._
 

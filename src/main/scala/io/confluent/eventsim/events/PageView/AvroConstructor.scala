@@ -1,6 +1,6 @@
 package io.confluent.eventsim.events.PageView
 
-import io.confluent.eventsim.{PageView, song}
+import io.confluent.eventsim.avro.{PageView, song}
 
 import scala.collection.JavaConversions._
 

@@ -1,6 +1,6 @@
 package io.confluent.eventsim.events.Auth
 
-import io.confluent.eventsim.Auth
+import io.confluent.eventsim.avro.Auth
 
 import scala.collection.JavaConversions._
 
