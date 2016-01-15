@@ -4,7 +4,7 @@ version := "2.0"
 
 scalaVersion := "2.11.6"
 
-resolvers += Resolver.url("confluent", url("http://packages.confluent.io/maven"))
+// resolvers += Resolver.url("confluent", url("http://packages.confluent.io/maven"))
 
 libraryDependencies += "org.apache.avro" % "avro" % "1.7.7"
 
@@ -22,6 +22,6 @@ libraryDependencies += "org.apache.kafka" % "kafka-clients" % "0.9.0.0"
 
 libraryDependencies += "org.scala-lang.modules" % "scala-parser-combinators_2.11" % "1.0.4"
 
-libraryDependencies += "io.confluent" % "kafka-avro-serializer" % "2.0.0"
+// libraryDependencies += "io.confluent" % "kafka-avro-serializer" % "2.0.0"
 
 seq( sbtavro.SbtAvro.avroSettings : _*)
