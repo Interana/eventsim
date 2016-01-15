@@ -1,39 +1,44 @@
 package io.confluent.eventsim
 
-import java.io.{FileOutputStream, File}
+import java.io.{File, FileOutputStream}
 import java.time.ZoneOffset
 import java.util.Properties
+
 import io.confluent.eventsim.config.ConfigFromFile
-import io.confluent.eventsim.events
 import io.confluent.eventsim.events.Auth.Constructor
 import io.confluent.eventsim.events.StatusChange.{AvroConstructor, JSONConstructor}
-import org.apache.kafka.clients.producer.{ProducerConfig, ProducerRecord, KafkaProducer}
+import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
 
 /**
   * Created by jadler on 1/13/16.
   */
 object Output {
+
   // place to put all the output related code
 
   trait canwrite {
     def write()
+
     def flushAndClose()
   }
 
   private class FileEventWriter(val constructor: events.Constructor, val file: File) extends Object with canwrite {
     val out = new FileOutputStream(file)
+
     def write() = out.write(constructor.end().asInstanceOf[Array[Byte]])
 
-    override def flushAndClose(): Unit = {out.flush(); out.close()}
+    override def flushAndClose(): Unit = {
+      out.flush(); out.close()
+    }
   }
 
   private class KafkaEventWriter(val constructor: events.Constructor, val topic: String, val brokers: String) extends Object with canwrite {
 
     val props = new Properties()
-    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,   "org.apache.kafka.common.serialization.ByteArraySerializer")
+    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer")
-      //if (constructor.isInstanceOf[JSONConstructor]) "org.apache.kafka.common.serialization.ByteArraySerializer"
-      //else "io.confluent.kafka.serializers.KafkaAvroSerializer")
+    //if (constructor.isInstanceOf[JSONConstructor]) "org.apache.kafka.common.serialization.ByteArraySerializer"
+    //else "io.confluent.kafka.serializers.KafkaAvroSerializer")
     props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, brokers)
 
     val producer = new KafkaProducer[Object, Object](props)
@@ -48,7 +53,9 @@ object Output {
       producer.send(pr)
     }
 
-    override def flushAndClose(): Unit = {producer.flush(); producer.close();}
+    override def flushAndClose(): Unit = {
+      producer.flush(); producer.close();
+    }
   }
 
   val authConstructor: Constructor =
@@ -93,12 +100,12 @@ object Output {
     statusChangeEventWriter.flushAndClose()
   }
 
-  def writeEvents(session: Session, device: Map[String,Any], userId: Int, props: Map[String,Any]) = {
+  def writeEvents(session: Session, device: Map[String, Any], userId: Int, props: Map[String, Any]) = {
 
     val showUserDetails = ConfigFromFile.showUserWithState(session.currentState.auth)
     pageViewConstructor.start
-    pageViewConstructor.setTs(session.nextEventTimeStamp.get.toInstant(ZoneOffset.UTC)toEpochMilli())
-    pageViewConstructor.setSessionId( session.sessionId)
+    pageViewConstructor.setTs(session.nextEventTimeStamp.get.toInstant(ZoneOffset.UTC) toEpochMilli())
+    pageViewConstructor.setSessionId(session.sessionId)
     pageViewConstructor.setPage(session.currentState.page)
     pageViewConstructor.setAuth(session.currentState.auth)
     pageViewConstructor.setMethod(session.currentState.method)
@@ -113,7 +120,7 @@ object Output {
         pageViewConstructor.setTag(Main.tag.get)
     }
 
-    if (session.currentState.page=="NextSong") {
+    if (session.currentState.page == "NextSong") {
       pageViewConstructor.setArtist(session.currentSong.get._2)
       pageViewConstructor.setTitle(session.currentSong.get._3)
       pageViewConstructor.setDuration(session.currentSong.get._4)
@@ -121,8 +128,8 @@ object Output {
       listenConstructor.setArtist(session.currentSong.get._2)
       listenConstructor.setTitle(session.currentSong.get._3)
       listenConstructor.setDuration(session.currentSong.get._4)
-      listenConstructor.setTs(session.nextEventTimeStamp.get.toInstant(ZoneOffset.UTC)toEpochMilli())
-      listenConstructor.setSessionId( session.sessionId)
+      listenConstructor.setTs(session.nextEventTimeStamp.get.toInstant(ZoneOffset.UTC) toEpochMilli())
+      listenConstructor.setSessionId(session.sessionId)
       listenConstructor.setAuth(session.currentState.auth)
       listenConstructor.setLevel(session.currentState.level)
       listenConstructor.setItemInSession(session.itemInSession)
@@ -136,10 +143,10 @@ object Output {
       listenEventWriter.write
     }
 
-    if (session.currentState.page=="Submit Downgrade" || session.currentState.page=="Submit Upgrade") {
+    if (session.currentState.page == "Submit Downgrade" || session.currentState.page == "Submit Upgrade") {
       statusChangeConstructor.start()
-      statusChangeConstructor.setTs(session.nextEventTimeStamp.get.toInstant(ZoneOffset.UTC)toEpochMilli())
-      statusChangeConstructor.setSessionId( session.sessionId)
+      statusChangeConstructor.setTs(session.nextEventTimeStamp.get.toInstant(ZoneOffset.UTC) toEpochMilli())
+      statusChangeConstructor.setSessionId(session.sessionId)
       statusChangeConstructor.setAuth(session.currentState.auth)
       statusChangeConstructor.setLevel(session.currentState.level)
       statusChangeConstructor.setItemInSession(session.itemInSession)
@@ -153,10 +160,10 @@ object Output {
       statusChangeEventWriter.write
     }
 
-    if (session.previousState.isDefined && session.previousState.get.page=="Login") {
+    if (session.previousState.isDefined && session.previousState.get.page == "Login") {
       authConstructor.start()
-      authConstructor.setTs(session.nextEventTimeStamp.get.toInstant(ZoneOffset.UTC)toEpochMilli())
-      authConstructor.setSessionId( session.sessionId)
+      authConstructor.setTs(session.nextEventTimeStamp.get.toInstant(ZoneOffset.UTC) toEpochMilli())
+      authConstructor.setSessionId(session.sessionId)
       authConstructor.setLevel(session.currentState.level)
       authConstructor.setItemInSession(session.itemInSession)
       authConstructor.setDeviceDetails(device)

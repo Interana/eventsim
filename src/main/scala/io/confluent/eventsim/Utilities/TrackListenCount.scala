@@ -4,7 +4,7 @@ import java.io.PrintWriter
 
 import scala.io.Source
 
-object TrackListenCount  {
+object TrackListenCount {
 
   def compute() = {
 
@@ -24,9 +24,9 @@ object TrackListenCount  {
     // tempo,timeSignature,timeSignatureConfidence,TrackId
 
     var counter = 0
-    val mdfile = Source.fromFile("data/songs_analysis.txt","ISO-8859-1")
+    val mdfile = Source.fromFile("data/songs_analysis.txt", "ISO-8859-1")
     val mdfileLines = mdfile.getLines()
-    val metadata = new scala.collection.mutable.HashMap[String,Double]()
+    val metadata = new scala.collection.mutable.HashMap[String, Double]()
     for (md <- mdfileLines) {
       System.err.print("\r" + counter.toString)
       counter += 1
@@ -52,9 +52,9 @@ object TrackListenCount  {
 
     // unique tracks format:
     // trackId<SEP>songId<SEP>artistName<SEP>songTitle
-    val trackFile = Source.fromFile("data/unique_tracks.txt","ISO-8859-1")
+    val trackFile = Source.fromFile("data/unique_tracks.txt", "ISO-8859-1")
     val trackFileLines = trackFile.getLines()
-    val tracks = new scala.collection.mutable.HashMap[String,(String,String,String)]()
+    val tracks = new scala.collection.mutable.HashMap[String, (String, String, String)]()
     for (t <- trackFileLines) {
       System.err.print("\r" + counter.toString)
       counter += 1
@@ -76,19 +76,19 @@ object TrackListenCount  {
 
     val out = new PrintWriter("data/listen_counts.txt")
 
-    tracks.foreach((r:(String,(String,String,String))) => {
-      val (trackId,(songId,artist,songName)) = r
-      val count = counts.getOrElse(songId,0)
+    tracks.foreach((r: (String, (String, String, String))) => {
+      val (trackId, (songId, artist, songName)) = r
+      val count = counts.getOrElse(songId, 0)
       val duration = metadata(trackId)
       if (count > 0)
-        out.println(trackId + "\t" + removeTabs(artist)  + "\t" + removeTabs(songName)  + "\t" + duration  + "\t" + count )
+        out.println(trackId + "\t" + removeTabs(artist) + "\t" + removeTabs(songName) + "\t" + duration + "\t" + count)
     })
 
     out.close()
   }
 
   def removeTabs(s: String): String = {
-    s.replaceAll("\t","     ")
+    s.replaceAll("\t", "     ")
   }
 
 }

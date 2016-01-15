@@ -1,21 +1,88 @@
-{"namespace" : "io.confluent.eventsim.avro",
-  "type" : "record",
-  "name" : "PageView",
-  "fields" : [
-    {"name" : "ts", "type" : "long"},
-    {"name" : "userId", "type" : ["null","long"]},
-    {"name" : "sessionId", "type" : "long"},
-    {"name" : "page", "type" : "string"},
-    {"name" : "auth", "type" : "string"},
-    {"name" : "method", "type" : "string"},
-    {"name" : "status", "type" : "int"},
-    {"name" : "level", "type" : "string"},
-    {"name" : "itemInSession", "type" : "int"},
-    {"name" : "userDetails",
-     "type": [{"type" : "map", "values": ["string", "long", "double"]}, "null"]},
-    {"name" : "deviceDetails",
-      "type": [{"type" : "map", "values": ["string", "long", "double"]}, "null"]},
-    {"name" : "songProperties", "type" : ["null", "song"]},
-    {"name": "tag", "type" : ["null", "string"]}
+{
+  "namespace": "io.confluent.eventsim.avro",
+  "type": "record",
+  "name": "PageView",
+  "fields": [
+    {
+      "name": "ts",
+      "type": "long"
+    },
+    {
+      "name": "userId",
+      "type": [
+        "null",
+        "long"
+      ]
+    },
+    {
+      "name": "sessionId",
+      "type": "long"
+    },
+    {
+      "name": "page",
+      "type": "string"
+    },
+    {
+      "name": "auth",
+      "type": "string"
+    },
+    {
+      "name": "method",
+      "type": "string"
+    },
+    {
+      "name": "status",
+      "type": "int"
+    },
+    {
+      "name": "level",
+      "type": "string"
+    },
+    {
+      "name": "itemInSession",
+      "type": "int"
+    },
+    {
+      "name": "userDetails",
+      "type": [
+        {
+          "type": "map",
+          "values": [
+            "string",
+            "long",
+            "double"
+          ]
+        },
+        "null"
+      ]
+    },
+    {
+      "name": "deviceDetails",
+      "type": [
+        {
+          "type": "map",
+          "values": [
+            "string",
+            "long",
+            "double"
+          ]
+        },
+        "null"
+      ]
+    },
+    {
+      "name": "songProperties",
+      "type": [
+        "null",
+        "song"
+      ]
+    },
+    {
+      "name": "tag",
+      "type": [
+        "null",
+        "string"
+      ]
+    }
   ]
 }

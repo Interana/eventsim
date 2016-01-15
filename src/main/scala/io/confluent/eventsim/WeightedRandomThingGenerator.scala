@@ -3,10 +3,10 @@ package io.confluent.eventsim
 import scala.collection.mutable.ArrayBuffer
 
 /**
- * Class to randomly return a thing from a (weighted) list of things
- */
+  * Class to randomly return a thing from a (weighted) list of things
+  */
 
-class WeightedRandomThingGenerator[T]  {
+class WeightedRandomThingGenerator[T] {
   val ab = new ArrayBuffer[(T, Integer)](0)
   var a = new Array[(T, Integer)](0)
   var ready = false
@@ -30,12 +30,12 @@ class WeightedRandomThingGenerator[T]  {
       a = ab.toArray
       ready = true
     }
-    val key: (T, Integer) = (null, TimeUtilities.rng.nextInt(totalWeight)).asInstanceOf[(T,Integer)]
+    val key: (T, Integer) = (null, TimeUtilities.rng.nextInt(totalWeight)).asInstanceOf[(T, Integer)]
     val idx = java.util.Arrays.binarySearch(a, key, tupleSecondValueOrdering)
     if (idx >= 0) a(idx)._1 else a(-idx - 2)._1
   }
 
   def mkString =
-    a.take(5).foldLeft("First 5 items:\n")((s:String,t:(T,Integer)) => s + "\t" + t.toString() + "\n")
+    a.take(5).foldLeft("First 5 items:\n")((s: String, t: (T, Integer)) => s + "\t" + t.toString() + "\n")
 
 }

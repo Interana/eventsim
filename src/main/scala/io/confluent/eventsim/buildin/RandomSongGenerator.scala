@@ -2,6 +2,7 @@ package io.confluent.eventsim.buildin
 
 import java.io.FileInputStream
 import java.util.zip.GZIPInputStream
+
 import io.confluent.eventsim.WeightedRandomThingGenerator
 
 import scala.collection.mutable
@@ -12,16 +13,16 @@ object RandomSongGenerator extends WeightedRandomThingGenerator[String] {
   // val s = Source.fromFile("data/listen_counts.txt","ISO-8859-1")
   val fis = new FileInputStream("data/listen_counts.txt.gz")
   val gis = new GZIPInputStream(fis)
-  val s = Source.fromInputStream(gis,"ISO-8859-1")
+  val s = Source.fromInputStream(gis, "ISO-8859-1")
 
   val listenLines = s.getLines()
 
-  val trackIdMap = new mutable.HashMap[String,(String,String,Float,Int)]()
+  val trackIdMap = new mutable.HashMap[String, (String, String, Float, Int)]()
   var i = 0
   for (ll <- listenLines) {
     if ((i % 1000) == 0)
       System.err.print("\r" + i)
-    i +=1
+    i += 1
     try {
       val fields = ll.split("\t")
       val trackId = fields(0)
@@ -32,7 +33,7 @@ object RandomSongGenerator extends WeightedRandomThingGenerator[String] {
         if (d != "") d.toFloat else 180.0.toFloat
       }
       val count = fields(4).toInt
-      trackIdMap.put(trackId,(artist,songName,duration,count))
+      trackIdMap.put(trackId, (artist, songName, duration, count))
       this.add(trackId, count)
     } catch {
       case e: NumberFormatException =>
@@ -84,16 +85,16 @@ object RandomSongGenerator extends WeightedRandomThingGenerator[String] {
   }
 
 
-  def nextSong(lastTrackId: String): (String,String,String,Float) = {
-      val nextTrackId =
-        if (similarSongs.nonEmpty && similarSongs.contains(lastTrackId)) {
-          similarSongs(lastTrackId).randomThing
-        } else {
-          this.randomThing
-        }
-      val song = trackIdMap(nextTrackId)
-      (nextTrackId,song._1,song._2,song._3)
-    }
+  def nextSong(lastTrackId: String): (String, String, String, Float) = {
+    val nextTrackId =
+      if (similarSongs.nonEmpty && similarSongs.contains(lastTrackId)) {
+        similarSongs(lastTrackId).randomThing
+      } else {
+        this.randomThing
+      }
+    val song = trackIdMap(nextTrackId)
+    (nextTrackId, song._1, song._2, song._3)
+  }
 
   def nextSong(): (String, String, String, Float) = nextSong("")
 

@@ -1,24 +1,24 @@
 package io.confluent.eventsim
 
-import java.io.{OutputStream, Serializable}
-import java.time.{ZoneOffset, LocalDateTime}
-import java.util
+import java.io.Serializable
+import java.time.LocalDateTime
+
 import io.confluent.eventsim.config.ConfigFromFile
 
 class User(val alpha: Double,
            val beta: Double,
            val startTime: LocalDateTime,
-           val initialSessionStates: scala.collection.mutable.Map[(String,String),WeightedRandomThingGenerator[State]],
+           val initialSessionStates: scala.collection.mutable.Map[(String, String), WeightedRandomThingGenerator[State]],
            val auth: String,
-           val props: Map[String,Any],
-           var device: Map[String,Any],
+           val props: Map[String, Any],
+           var device: Map[String, Any],
            val initialLevel: String
           ) extends Serializable with Ordered[User] {
 
   val userId = Counters.nextUserId
   var session = new Session(
     Some(Session.pickFirstTimeStamp(startTime, alpha, beta)),
-      alpha, beta, initialSessionStates, auth, initialLevel)
+    alpha, beta, initialSessionStates, auth, initialLevel)
 
   override def compare(that: User) =
     (that.session.nextEventTimeStamp, this.session.nextEventTimeStamp) match {
@@ -35,7 +35,7 @@ class User(val alpha: Double,
     session.incrementEvent()
     if (session.done) {
       if (TimeUtilities.rng.nextDouble() < prAttrition ||
-          session.currentState.auth == ConfigFromFile.churnedState.getOrElse("")) {
+        session.currentState.auth == ConfigFromFile.churnedState.getOrElse("")) {
         session.nextEventTimeStamp = None
         // TODO: mark as churned
       }

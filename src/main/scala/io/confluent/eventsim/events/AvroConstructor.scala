@@ -13,11 +13,15 @@ import org.apache.avro.specific.SpecificDatumWriter
 abstract class AvroConstructor[T]() extends Object with Constructor {
 
   def start(): Unit
+
   def schema: Schema
 
   def datumWriter = new SpecificDatumWriter[T](this.schema)
+
   def baos = new ByteArrayOutputStream(4096)
+
   def encoder = EncoderFactory.get().binaryEncoder(baos, null)
+
   def serialize(t: T): Array[Byte] = {
     baos.reset()
     datumWriter.write(t, encoder)

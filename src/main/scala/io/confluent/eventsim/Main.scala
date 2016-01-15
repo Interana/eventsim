@@ -3,10 +3,10 @@ package io.confluent.eventsim
 import java.time.temporal.ChronoUnit
 import java.time.{Duration, LocalDateTime, ZoneOffset}
 
-import io.confluent.eventsim.Utilities.{TrackListenCount, SimilarSongParser}
-import io.confluent.eventsim.buildin.{UserProperties, DeviceProperties}
+import io.confluent.eventsim.Utilities.{SimilarSongParser, TrackListenCount}
+import io.confluent.eventsim.buildin.{DeviceProperties, UserProperties}
 import io.confluent.eventsim.config.ConfigFromFile
-import org.rogach.scallop.{ScallopOption, ScallopConf}
+import org.rogach.scallop.{ScallopConf, ScallopOption}
 
 import scala.collection.mutable
 
@@ -100,7 +100,7 @@ object Main extends App {
 
   val seed = if (ConfFromOptions.randomSeed.isSupplied)
     ConfFromOptions.randomSeed.get.get.toLong
-   else
+  else
     ConfigFromFile.seed
 
 
@@ -153,7 +153,7 @@ object Main extends App {
     }
     System.err.println("Initial number of users: " + ConfFromOptions.nUsers() + ", Final number of users: " + nUsers)
 
-    val startTimeString =  startTime.toString
+    val startTimeString = startTime.toString
     val endTimeString = endTime.toString
     System.err.println("Start: " + startTimeString + ", End: " + endTimeString)
 

@@ -12,12 +12,18 @@ class JSONConstructor extends Object with Constructor {
   jsonFactory.setRootValueSeparator("")
   val buffer = new ByteArrayOutputStream()
   val generator = jsonFactory.createGenerator(buffer, JsonEncoding.UTF8)
+
   def setTs(n: Long) = generator.writeNumberField("ts", n)
+
   def setUserId(n: Long) = generator.writeNumberField("userId", n)
+
   def setSessionId(n: Long) = generator.writeNumberField("sessionId", n)
+
   def setLevel(s: String) = generator.writeStringField("level", s)
+
   def setItemInSession(i: Int) = generator.writeNumberField("itemInSession", i)
-  def setUserDetails(m: Map[String,Any]) =
+
+  def setUserDetails(m: Map[String, Any]) =
     m.foreach((p: (String, Any)) => {
       p._2 match {
         case _: Long => generator.writeNumberField(p._1, p._2.asInstanceOf[Long])
@@ -25,8 +31,10 @@ class JSONConstructor extends Object with Constructor {
         case _: Double => generator.writeNumberField(p._1, p._2.asInstanceOf[Double])
         case _: Float => generator.writeNumberField(p._1, p._2.asInstanceOf[Float])
         case _: String => generator.writeStringField(p._1, p._2.asInstanceOf[String])
-      }})
-  def setDeviceDetails(m: Map[String,Any]) =
+      }
+    })
+
+  def setDeviceDetails(m: Map[String, Any]) =
     m.foreach((p: (String, Any)) => {
       p._2 match {
         case _: Long => generator.writeNumberField(p._1, p._2.asInstanceOf[Long])
@@ -34,9 +42,13 @@ class JSONConstructor extends Object with Constructor {
         case _: Double => generator.writeNumberField(p._1, p._2.asInstanceOf[Double])
         case _: Float => generator.writeNumberField(p._1, p._2.asInstanceOf[Float])
         case _: String => generator.writeStringField(p._1, p._2.asInstanceOf[String])
-      }})
+      }
+    })
+
   def setTag(s: String) = generator.writeStringField("tag", s)
+
   def start() = generator.writeStartObject()
+
   def end() = {
     generator.writeEndObject()
     generator.writeRaw('\n')

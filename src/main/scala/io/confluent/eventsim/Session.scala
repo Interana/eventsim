@@ -2,49 +2,49 @@ package io.confluent.eventsim
 
 import java.time.LocalDateTime
 
-import TimeUtilities._
+import io.confluent.eventsim.TimeUtilities._
 import io.confluent.eventsim.buildin.RandomSongGenerator
 import io.confluent.eventsim.config.ConfigFromFile
 
 /**
- * Object to capture session related calculations and properties
- */
+  * Object to capture session related calculations and properties
+  */
 class Session(var nextEventTimeStamp: Option[LocalDateTime],
               val alpha: Double, // expected request inter-arrival time
-              val beta: Double,  // expected session inter-arrival time
-              val initialStates: scala.collection.Map[(String,String),WeightedRandomThingGenerator[State]],
+              val beta: Double, // expected session inter-arrival time
+              val initialStates: scala.collection.Map[(String, String), WeightedRandomThingGenerator[State]],
               val auth: String,
-              val level: String ) {
+              val level: String) {
 
   val sessionId = Counters.nextSessionId
   var itemInSession = 0
   var done = false
-  var currentState:State = initialStates((auth, level)).randomThing
-  var previousState:Option[State] = None
-  var currentSong:Option[(String,String,String,Float)] =
-    if (currentState.page=="NextSong") Some(RandomSongGenerator.nextSong()) else None
-  var currentSongEnd:Option[LocalDateTime] =
-    if (currentState.page=="NextSong") Some(nextEventTimeStamp.get.plusSeconds(currentSong.get._4.toInt)) else None
+  var currentState: State = initialStates((auth, level)).randomThing
+  var previousState: Option[State] = None
+  var currentSong: Option[(String, String, String, Float)] =
+    if (currentState.page == "NextSong") Some(RandomSongGenerator.nextSong()) else None
+  var currentSongEnd: Option[LocalDateTime] =
+    if (currentState.page == "NextSong") Some(nextEventTimeStamp.get.plusSeconds(currentSong.get._4.toInt)) else None
 
   def incrementEvent() = {
     val nextState = currentState.nextState(rng)
     nextState match {
       case None =>
-        done=true
+        done = true
       case x if 300 until 399 contains x.get.status =>
-        nextEventTimeStamp=Some(nextEventTimeStamp.get.plusSeconds(1))
+        nextEventTimeStamp = Some(nextEventTimeStamp.get.plusSeconds(1))
         currentState = nextState.get
         itemInSession += 1
 
-      case x if x.get.page=="NextSong" =>
+      case x if x.get.page == "NextSong" =>
         if (currentSong.isEmpty) {
-          nextEventTimeStamp=Some(nextEventTimeStamp.get.plusSeconds(exponentialRandomValue(alpha).toInt))
+          nextEventTimeStamp = Some(nextEventTimeStamp.get.plusSeconds(exponentialRandomValue(alpha).toInt))
           currentSong = Some(RandomSongGenerator.nextSong())
         } else if (nextEventTimeStamp.get.isBefore(currentSongEnd.get)) {
           nextEventTimeStamp = currentSongEnd
           currentSong = Some(RandomSongGenerator.nextSong(currentSong.get._1))
         } else {
-          nextEventTimeStamp=Some(nextEventTimeStamp.get.plusSeconds(exponentialRandomValue(alpha).toInt))
+          nextEventTimeStamp = Some(nextEventTimeStamp.get.plusSeconds(exponentialRandomValue(alpha).toInt))
           currentSong = Some(RandomSongGenerator.nextSong(currentSong.get._1))
         }
         currentSongEnd = Some(nextEventTimeStamp.get.plusSeconds(currentSong.get._4.toInt))
@@ -53,7 +53,7 @@ class Session(var nextEventTimeStamp: Option[LocalDateTime],
         itemInSession += 1
 
       case _ =>
-        nextEventTimeStamp=Some(nextEventTimeStamp.get.plusSeconds(exponentialRandomValue(alpha).toInt))
+        nextEventTimeStamp = Some(nextEventTimeStamp.get.plusSeconds(exponentialRandomValue(alpha).toInt))
         previousState = Some(currentState)
         currentState = nextState.get
         itemInSession += 1
@@ -70,9 +70,9 @@ class Session(var nextEventTimeStamp: Option[LocalDateTime],
 object Session {
 
   def pickFirstTimeStamp(st: LocalDateTime,
-    alpha: Double, // expected request inter-arrival time
-    beta: Double   // expected session inter-arrival time
-   ): LocalDateTime = {
+                         alpha: Double, // expected request inter-arrival time
+                         beta: Double // expected session inter-arrival time
+                        ): LocalDateTime = {
     // pick random start point, iterate to steady state
     val startPoint = st.minusSeconds(beta.toInt * 2)
     var candidate = pickNextSessionStartTime(startPoint, beta)

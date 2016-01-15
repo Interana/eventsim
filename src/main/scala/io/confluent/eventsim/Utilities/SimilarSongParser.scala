@@ -1,14 +1,14 @@
 package io.confluent.eventsim.Utilities
 
-import java.io.{FileOutputStream, PrintWriter, File}
+import java.io.{File, FileOutputStream, PrintWriter}
 import java.net.URL
 import java.nio.file.NotDirectoryException
 import java.util
-import java.util.ArrayList
 import java.util.zip.GZIPOutputStream
-import sys.process._
 
-import com.fasterxml.jackson.core.{TreeNode, JsonParser, JsonFactory}
+import com.fasterxml.jackson.core.{JsonFactory, JsonParser, TreeNode}
+
+import scala.sys.process._
 
 object SimilarSongParser {
 

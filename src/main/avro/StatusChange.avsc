@@ -1,17 +1,69 @@
-{"namespace" : "io.confluent.eventsim.avro",
-  "type" : "record",
-  "name" : "StatusChange",
-  "fields" : [
-    {"name" : "ts", "type" : "long"},
-    {"name" : "userId", "type" : ["null","long"]},
-    {"name" : "sessionId", "type" : "long"},
-    {"name" : "auth", "type" : "string"},
-    {"name" : "level", "type" : "string"},
-    {"name" : "itemInSession", "type" : "int"},
-    {"name" : "userDetails",
-     "type": [{"type" : "map", "values": ["string", "long", "double"]}, "null"]},
-    {"name" : "deviceDetails",
-      "type": [{"type" : "map", "values": ["string", "long", "double"]}, "null"]},
-    {"name": "tag", "type" : ["null", "string"]}
+{
+  "namespace": "io.confluent.eventsim.avro",
+  "type": "record",
+  "name": "StatusChange",
+  "fields": [
+    {
+      "name": "ts",
+      "type": "long"
+    },
+    {
+      "name": "userId",
+      "type": [
+        "null",
+        "long"
+      ]
+    },
+    {
+      "name": "sessionId",
+      "type": "long"
+    },
+    {
+      "name": "auth",
+      "type": "string"
+    },
+    {
+      "name": "level",
+      "type": "string"
+    },
+    {
+      "name": "itemInSession",
+      "type": "int"
+    },
+    {
+      "name": "userDetails",
+      "type": [
+        {
+          "type": "map",
+          "values": [
+            "string",
+            "long",
+            "double"
+          ]
+        },
+        "null"
+      ]
+    },
+    {
+      "name": "deviceDetails",
+      "type": [
+        {
+          "type": "map",
+          "values": [
+            "string",
+            "long",
+            "double"
+          ]
+        },
+        "null"
+      ]
+    },
+    {
+      "name": "tag",
+      "type": [
+        "null",
+        "string"
+      ]
+    }
   ]
 }
