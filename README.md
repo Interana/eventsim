@@ -118,38 +118,37 @@ To build the executable, run
 The program can accept a number of command line options:
 
     $ bin/eventsim --help
-      -a, --attrition-rate  <arg>    annual user attrition rate (as a fraction of
-                                     current, so 1% => 0.01) (default = 0.0)
-      -c, --config  <arg>            config file
-          --continuous               continuous output
-          --nocontinuous             run all at once
-      -e, --end-time  <arg>          end time for data
-                                     (default = 2015-09-06T21:33:47.149)
-      -f, --from  <arg>              from x days ago (default = 15)
-          --generate-counts          generate listen counts file then stop
-          --nogenerate-counts        run normally
-          --generate-similars        generate similar song file then stop
-          --nogenerate-similars      run normally
-      -g, --growth-rate  <arg>       annual user growth rate (as a fraction of
-                                     current, so 1% => 0.01) (default = 0.0)
-          --kafkaBrokerList  <arg>   kafka broker list
-      -k, --kafkaTopic  <arg>        kafka topic
-      -n, --nusers  <arg>            initial number of users (default = 1)
-      -r, --randomseed  <arg>        random seed
-      -s, --start-time  <arg>        start time for data
-                                     (default = 2015-08-30T21:33:47.196)
-          --tag  <arg>               tag applied to each line (for example, A/B test
-                                     group)
-      -t, --to  <arg>                to y days ago (default = 1)
-          --useAvro                  output data as Avro
-          --nouseAvro                output data as JSON
-      -u, --userid  <arg>            first user id (default = 1)
-      -v, --verbose                  verbose output (not implemented yet)
-          --noverbose                silent mode
-          --help                     Show help message
+          -a, --attrition-rate  <arg>    annual user attrition rate (as a fraction of
+                                         current, so 1% => 0.01) (default = 0.0)
+          -c, --config  <arg>            config file
+              --continuous               continuous output
+              --nocontinuous             run all at once
+          -e, --end-time  <arg>          end time for data
+                                         (default = 2016-01-06T15:02:33.785)
+          -f, --from  <arg>              from x days ago (default = 15)
+              --generate-counts          generate listen counts file then stop
+              --nogenerate-counts        run normally
+              --generate-similars        generate similar song file then stop
+              --nogenerate-similars      run normally
+          -g, --growth-rate  <arg>       annual user growth rate (as a fraction of
+                                         current, so 1% => 0.01) (default = 0.0)
+          -k, --kafkaBrokerList  <arg>   kafka broker list
+          -n, --nusers  <arg>            initial number of users (default = 1)
+          -r, --randomseed  <arg>        random seed
+          -s, --start-time  <arg>        start time for data
+                                         (default = 2015-12-30T15:02:33.839)
+              --tag  <arg>               tag applied to each line (for example, A/B test
+                                         group)
+          -t, --to  <arg>                to y days ago (default = 1)
+              --useAvro                  output data as Avro
+              --nouseAvro                output data as JSON
+          -u, --userid  <arg>            first user id (default = 1)
+          -v, --verbose                  verbose output (not implemented yet)
+              --noverbose                silent mode
+              --help                     Show help message
 
-     trailing arguments:
-      output-file (not required)   File name
+         trailing arguments:
+          output-dir (not required)   Directory for output files
 
 Only the config file is required.
 

@@ -1,4 +1,4 @@
-{"namespace" : "io.confluent.eventsim",
+{"namespace" : "io.confluent.eventsim.avro",
   "type" : "record",
   "name" : "Listen",
   "fields" : [
@@ -9,9 +9,9 @@
     {"name" : "level", "type" : "string"},
     {"name" : "itemInSession", "type" : "int"},
     {"name" : "userDetails",
-     "type": [{"type" : "map", "values": ["string", "long"]}, "null"]},
+     "type": [{"type" : "map", "values": ["string", "long", "double"]}, "null"]},
     {"name" : "deviceDetails",
-      "type": [{"type" : "map", "values": ["string", "long"]}, "null"]},
+      "type": [{"type" : "map", "values": ["string", "long", "double"]}, "null"]},
     {"name" : "songProperties", "type" :
       {
         "type": "record",
