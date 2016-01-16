@@ -1,4 +1,4 @@
-{
+[{
   "namespace": "io.confluent.eventsim.avro",
   "type": "record",
   "name": "Auth",
@@ -66,7 +66,7 @@
       "type": "boolean"
     }
   ]
-}
+},
 {
   "namespace": "io.confluent.eventsim.avro",
   "type": "record",
@@ -156,7 +156,7 @@
       ]
     }
   ]
-}
+},
 {
   "namespace": "io.confluent.eventsim.avro",
   "type": "record",
@@ -243,7 +243,7 @@
       ]
     }
   ]
-}
+},
 {
   "namespace": "io.confluent.eventsim.avro",
   "type": "record",
@@ -313,3 +313,4 @@
     }
   ]
 }
+]
