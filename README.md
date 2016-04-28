@@ -267,6 +267,7 @@ install it with this command:
 On Linux (specifically Ubuntu), it's a little more complicated. Here's what works for me:
 
     $ echo "deb http://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
+    $ sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 642AC823
     $ sudo apt-get update
     $ sudo apt-get install openjdk-8-jdk scala sbt
 
