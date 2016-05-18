@@ -107,7 +107,8 @@ class User(val alpha: Double,
           case _: Float => writer.writeNumberField(p._1, p._2.asInstanceOf[Float])
           case _: String => writer.writeStringField(p._1, p._2.asInstanceOf[String])
         }})
-      if (Main.tag.isDefined)
+    }
+    if (Main.tag.isDefined) {
         writer.writeStringField("tag", Main.tag.get)
     }
     if (session.currentState.page=="NextSong") {
