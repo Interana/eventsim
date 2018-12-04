@@ -1,2 +1,2 @@
 #! /bin/bash
-/usr/bin/java -XX:+AggressiveOpts -XX:+UseG1GC -XX:+UseStringDeduplication -Xmx8G -jar target/scala-2.10/eventsim-assembly-1.0.jar $*
+$JAVA_HOME/bin/java -XX:+AggressiveOpts -XX:+UseG1GC -XX:+UseStringDeduplication -Xmx8G -jar target/scala-2.10/eventsim-assembly-1.0.jar $*
