@@ -2,6 +2,8 @@ name := "eventsim"
 
 version := "1.0"
 
+scalaVersion := "2.10.4"
+
 libraryDependencies += "org.apache.commons" % "commons-math3" % "3.5"
 
 libraryDependencies += "de.jollyday" % "jollyday" % "0.5.1"
