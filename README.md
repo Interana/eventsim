@@ -266,7 +266,7 @@ install it with this command:
 
 On Linux (specifically Ubuntu), it's a little more complicated. Here's what works for me:
     
-    #Installing Java
+    #Installing Java, Scala
     $ sudo apt-get update
     $ sudo apt-get install openjdk-8-jdk scala 
 
